@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!-- $Id: general,v 1.2 2019/03/03 20:54:13 jim Exp $ -->
+<!-- This template is for creating an Internet Draft using xml2rfc,
+     which is available here: http://xml.resource.org. -->
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!-- One method to get references from the online citation libraries.
+     There has to be one entity for each item to be referenced. 
+     An alternate method (rfc include) is described in the references. -->
+
+<!ENTITY RFC2119 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
+<!ENTITY RFC2137 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2137.xml">
+<!ENTITY RFC2629 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2629.xml">
+<!ENTITY RFC2845 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2845.xml">
+<!ENTITY RFC3022 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3022.xml">
+<!ENTITY RFC3552 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3552.xml">
+<!ENTITY RFC6146 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6146.xml">
+<!ENTITY RFC6147 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6147.xml">
+<!ENTITY RFC6950 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6950.xml">
+<!ENTITY RFC7858 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7858.xml">
+<!ENTITY RFC7871 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7871.xml">
+<!ENTITY RFC8446 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.8446.xml">
+<!ENTITY RFC8484 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.8484.xml">
+<!ENTITY RFC8499 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.8499.xml">
+
+<!ENTITY I-D.narten-iana-considerations-rfc2434bis SYSTEM "http://xml.resource.org/public/rfc/bibxml3/reference.I-D.narten-iana-considerations-rfc2434bis.xml">
+]>
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+<!-- used by XSLT processors -->
+<!-- For a complete list and description of processing instructions (PIs), 
+     please see http://xml.resource.org/authoring/README.html. -->
+<!-- Below are generally applicable Processing Instructions (PIs) that most I-Ds might want to use.
+     (Here they are set differently than their defaults in xml2rfc v1.32) -->
+<?rfc strict="yes" ?>
+<!-- give errors regarding ID-nits and DTD validation -->
+<!-- control the table of contents (ToC) -->
+<?rfc toc="yes"?>
+<!-- generate a ToC -->
+<?rfc tocdepth="4"?>
+<!-- the number of levels of subsections in ToC. default: 3 -->
+<!-- control references -->
+<?rfc symrefs="yes"?>
+<!-- use symbolic references tags, i.e, [RFC2119] instead of [1] -->
+<?rfc sortrefs="yes" ?>
+<!-- sort the reference entries alphabetically -->
+<!-- control vertical white space 
+     (using these PIs as follows is recommended by the RFC Editor) -->
+<?rfc compact="yes" ?><!-- do not start each main section on a new page -->
+<?rfc subcompact="no" ?>
+<!-- keep one blank line between list items -->
+<!-- end of list of popular I-D processing instructions -->
+<rfc category="info" docName="draft-dlr-doh-deploy-00" ipr="trust200902">
+  <!-- category values: std, bcp, info, exp, and historic
+     ipr values: full3667, noModification3667, noDerivatives3667
+     you can add the attributes updates="NNNN" and obsoletes="NNNN" 
+     they will automatically be output with "(if approved)" -->
+
+  <!-- ***** FRONT MATTER ***** -->
+<front>
+    <!-- The abbreviated title is used in the page header - it is only necessary if the 
+         full title is longer than 39 characters -->
+
+    <title abbrev="draft-reid-doh-deploy">
+	   DNS over HTTPS (DoH) Deployment Considerations 
+    </title>
+
+    <!-- add 'role="editor"' below for the editors if appropriate -->
+
+    <!-- Another author who claims to be an editor -->
+
+
+    <author fullname="John Dickinson" initials="J" surname="Dickinson">
+      <organization>Sinodun Internet Technologies Ltd</organization>
+       <address>
+        <postal>
+          <street>Oxford Science Park</street>
+          <city>Oxford</city>
+           <code>OX4 4GA</code>
+          <country>UK</country>
+        </postal>
+        <email>jad@sinodun.com</email>
+      </address>
+    </author>
+
+    <author fullname="Jason Livingood" initials="J" surname="Livingood">
+      <organization>Comcast</organization>
+        <address>
+        <postal>
+          <street>1800 Arch Street</street>
+          <city>Philadelphia</city>
+          <code>PA 19118</code>
+          <country>USA</country>
+        </postal>
+        <email>jason_livingood@comcast.com</email>
+      </address>
+    </author>
+
+    <author fullname="Jim Reid" initials="J" surname="Reid">
+      <organization>RTFM llp</organization>
+      <address>
+        <postal>
+          <street>St Andrews House</street>
+          <city>382 Hillington Road</city>
+          <region>Glasgow</region>
+          <code>G51 4BL</code>
+          <country>Scotland</country>
+        </postal>
+        <email>jim@rfc1035.com</email>
+      </address>
+    </author>
+
+    <date month="March" year="2019" />
+
+    <!-- Meta-data Declarations -->
+
+     <area>Applications and Real-Time</area>
+
+    <workgroup>DoH</workgroup>
+
+    <keyword>template</keyword>
+
+    <!-- Keywords will be incorporated into HTML output
+         files in a meta tag but they have no effect on text or nroff
+         output. If you submit your draft to the RFC Editor, the
+         keywords will be used for the search engine. -->
+
+    <abstract>
+      <t>
+	The development of DNS over HTTPS (DoH), defined in RFC8484, introduces a major change to
+	the way in which devices and applications are able to use the Domain Name System. DoH traffic
+	uses HTTP over a TLS session. DoH clients and servers can use HTTP primitives to request and
+	supply DNS data instead of conventional DNS queries and responses using port 53. This
+	presents a number of challenges, including new risks and security concerns, for those
+	operating and running IP-based networks.
+      </t>
+      <t>
+	The objective of this document is to describe these challenges and provide advice on how to
+	minimise their impact.
+      </t>
+    </abstract>
+
+</front>
+
+<middle>
+
+  
+<section title="Introduction">
+    <t>
+      This document is focussed on DoH deployment issues. Several of these issues also occur in 
+      other DNS transports. However, the authors feel that, at this time, consideration of other
+      transports should be made in other documents and in the appropriate working groups.
+    </t>
+    <t>
+      At present, most traditional DNS traffic is not encrypted. This can pose a privacy challenge for
+      Internet users, because their access to named network resources can potentially be tracked
+      through their DNS queries. In principle, any network element along the path between the user
+      and resolver could observe this unencrypted traffic. DoH eliminates this problem by using TLS
+      to encrypt the queries and responses that are made. These use HTTP rather than the
+      conventional DNS protocol. Furthermore DoH traffic can be intermingled with other HTTPS traffic,
+      making it difficult for an eavesdropper to monitor DNS traffic or even be aware that it is
+      taking place.
+    </t>
+    <t>
+      A new model of DNS usage is created with DoH. A DoH server takes on the role of the recursive
+      resolving server in conventional DNS. DoH clients send DNS queries to DoH servers over DoH
+      instead of plaintext DNS queries to a conventional recursive resolving server. This DoH server
+      is likely to be operated and controlled by a third party - i.e. not whoever operates and
+      controls the existing recursive resolver DNS servers in some network. That in turn disrupts
+      the long standing and well understood trust relationships in traditional DNS.
+    </t>
+</section>
+
+
+<section title="Terminology">
+  <t>
+    DoH Server: A server supporting the DNS over HTTPS is called a "DoH server" to differentiate it
+    from a "DNS server" (one that only provides DNS service over one or more of the other transport
+    protocols standardised for DNS).  Similarly, a client that supports the DNS over HTTPS is called
+    a "DoH client".
+  </t>
+  <t>
+    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
+    "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in
+    <xref target="RFC2119">RFC 2119</xref>.</t>
+</section>
+
+
+<section title="Contrasting DoH and Conventional DNS">
+  <t>
+    With conventional DNS today, using UDP or TCP port 53, most users are assigned the IP addresses
+    of several recursive resolvers via DHCP or similar network bootstrapping mechanism. These are
+    usually the IP addresses of recursive resolvers that are administered by the network
+    operator. Users sometimes also change to third-party recursive resolvers. In some cases, they
+    may even operate their own local resolver.
+  </t>
+  <t>
+    RFC 8484 defines the protocol for DNS over HTTPS (DoH). When DoH is used, client and server DNS
+    traffic is encrypted using a TLS channel, typically to port 443. DoH clients will have little
+    need for conventional DNS apart from an initial bootstrap query to find the IP addresses of a
+    suitable DoH server. This will mean the bulk of their DNS resolver traffic would bypass an
+    operator's DNS resolver infrastructure because that traffic will make use of the resolver
+    service provided by the DoH server.
+  </t>
+  <t>
+    DoH displaces the traditional DNS client-server model of clients making queries and waiting for
+    a reply from a server.
+  </t>
+</section>
+
+
+<section title="DoH Impact on Existing DNS Behaviour">
+  <section title="DNS servers using Access Control Lists">
+       <t>
+	When a DoH server performs the role of a recursive resolving DNS server, it queries other
+	DNS or DoH servers to resolve the queries received from DoH clients. These outbound queries
+	will use a source IP address of the DoH server, not the originating client. This may
+	sometimes cause operational or security problems, for instance when the DoH server queries
+	another DoH or DNS server that uses access control lists based on source IP address. In this
+	case, the ACL applies to the DoH server and not the original DoH client. That can mean the
+	DoH client eventually gets a different response than if it made the query itself. In
+	particular, this may be a problem for IXFR or AXFR queries because authoritative DNS servers
+	commonly use ACLs to restrict these queries.
+       </t>
+       <t>
+       This problem becomes more acute for dynamic updates <xref target="RFC2137">RFC
+       2137</xref>. If an ACL-based on source IP address is used to accept or reject these requests,
+       it will be the address of the DoH server rather than the DoH client which determines the
+       outcome. However Transaction Signatures (TSIG) <xref target="RFC2845">RFC2845</xref> are more
+       commonly used for authenticating dynamic update requests. It is therefore essential for DoH
+       servers to ensure that TSIG resource records received from DoH clients are included in
+       outgoing requests. DoH servers MUST ensure TSIG resource records included in any requests
+       received from DoH clients are included whenever the DoH server has to contact another DoH or
+       DNS server to satisfy that request. Similarly, DoH servers MUST return to DoH clients any TSIG
+       resource records that are received from DNS or DoH servers.
+       </t>
+  </section>
+  <section title="Split DNS">
+       <t>
+	Split DNS configurations <xref target="RFC8499">RFC8499</xref> are widely used, particularly
+	in enterprise networks. These have an internal name space which is not visible to the public
+	Internet. Resolving DNS servers in such networks are configured to only provide answers for
+	this name internal space to requests from clients on the enterprise network. Applications and
+	devices making DoH requests on networks which use split DNS will not be able to access these
+	internal names unless their requests are sent to a suitably configured DoH server. This
+	probably means that networks using split DNS SHOULD provide DoH servers which are able to
+	provide answers for the internal name space.  
+       </t>
+       <t>
+       Use of third-party DoH servers is not recommended in networks which have split DNS. These
+       servers are unlikely to know about the configuration of the local network and will therefore
+       be unable to resolve or otherwise properly handle requests for the internal name space. This 
+       also presents security and privacy risks. Requests from DoH clients for internal names will
+       leak, disclosing sensitive information to an external DoH server which is operated and
+       controlled by a third party.  DoH clients on networks using split DNS SHOULD query DoH
+       servers which have been configured for that network's internal name space.  
+       </t>
+  </section>
+  <section title="Secure DNS (DNSSEC)">
+    <t>
+      <xref target="RFC8484">RFC 8484</xref> explains that interactions between a DoH server and
+      client benefit from the transport security provided by HTTPS and that DoH does not provide
+      message integrity. Put simply, although a DoH client can be sure it received exactly the data
+      sent by a DoH server, it does not know if that server is telling the truth. That can only be
+      verified by DNSSEC validation, assuming that the DNS data are signed. Therefore a
+      security-conscious DoH client SHOULD support DNSSEC and perform DNSSEC validation by
+      itself. In some circumstances, a DoH client MAY trust a DoH server to validate signed
+      responses on their behalf but MUST take full account of the conseqences of doing so.
+    </t>
+  </section>
+  <section title="Multicast DNS">
+	 <t>
+	   Need to say something about this and .local
+	 </t>
+  </section>
+</section>
+
+
+<section title="DoH Impact on Web Behaviour">
+  <section title="Browser Caches">
+    <t>
+      A web browser maintains a cache of recent DNS data. Responses from DoH servers will affect the
+      contents of that cache. This presents a security risk because it provides a way for DoH
+      servers to arbitrarily manipulate the content of a browser's cache that would not be possible
+      with conventional DNS.
+    </t>
+    <t>
+      DoH servers SHOULD NOT send DoH data (i.e. application/dns-message elements) unrelated to the
+      request made by a DoH Client. Similarly, a web server SHOULD NOT send DoH data that does not
+      correspond to any of the URIs in the HTML which is returned. i.e. If all the URIs on some web
+      page are for foo.example.com, the web server SHOULD NOT send application/dns-message elements
+      for bar.example.com or example.net. DoH clients SHOULD ignore such unrelated DoH data sent by
+      a DoH or web server. DoH clients MUST NOT cache such data.
+    </t>
+    <t>
+      Browser caches MUST respect the TTL in the response DNS RRSet.
+    </t>
+  </section>
+  <section title="Interaction with DoH Unaware Web Proxies">
+    <t>
+      Placeholder
+    </t>
+  </section>
+    <section title="Interaction with DoH Aware Web Proxies">
+    <t>
+      DoH aware web proxies MUST respect the TTL in the response DNS RRSet.
+    </t>
+  </section>
+  <section title="What else?">
+    <t>
+     There have to be some server PUSH horrors here
+    </t>
+  </section>
+</section>
+
+<section title="Use Cases">
+  <section title="DoH server forwarding to a traditional validating resolver:">
+    <t>
+      Placeholder
+    </t>
+ </section>
+ <section title="DoH server using private dns RRs known only to the DoH server">
+   <t>
+     Placeholder
+   </t>
+ </section>
+ <section title="DoH server to HTTP server forwarding to a traditional validating resolver:">
+   <t>
+     Placeholder
+   </t>
+ </section>
+ <section title="DoH server to HTTP server using private dns RRs known only to the DoH server">
+   <t>
+     Placeholder
+   </t>
+ </section>
+
+</section>
+
+
+
+<section title="Privacy Considerations">
+    <t>
+      Text goes here
+    </t>
+</section>
+
+
+<section anchor="Security" title="Security Considerations">
+  <t>
+    Text goes here
+  </t>
+</section>
+
+
+<section title="Recommendations">
+    <t>
+      DoH servers MUST NOT create an alternate root.
+    </t>
+    <t>
+      The responses received over DoH MUST be available in the traditional DNS.
+    </t>
+    <t>
+      The DoH server MAY make choices about which RRs to return if it knows more about the network
+      topology.
+    </t>
+    <t>
+      The DoH server MAY push useful additional RRs if it knows the client is likely to need them
+      soon. Again, they MUST be available in the traditional DNS.
+    </t>
+    <t>
+      DoH servers MUST support DNSSEC.
+    </t>
+    <t>
+      DoH clients SHOULD support DNSSEC.
+    </t>
+</section>
+
+
+<section anchor="IANA" title="IANA Considerations">
+      <t>This memo includes no request to IANA.</t>
+</section>
+
+
+<section anchor="Acknowledgements" title="Acknowledgements">
+      <t>
+	Fill this in later
+      </t>
+</section>
+    
+</middle>
+
+  <!--  *****BACK MATTER ***** -->
+
+<back>
+    <!-- References split into informative and normative -->
+
+    <!-- There are 2 ways to insert reference entries from the citation libraries:
+     1. define an ENTITY at the top, and use "ampersand character"RFC2629; here (as shown)
+     2. simply use a PI "less than character"?rfc include="reference.RFC.2119.xml"?> here
+        (for I-Ds: include="reference.I-D.narten-iana-considerations-rfc2434bis.xml")
+
+     Both are cited textually in the same manner: by using xref elements.
+     If you use the PI option, xml2rfc will, by default, try to find included files in the same
+     directory as the including file. You can also define the XML_LIBRARY environment variable
+     with a value containing a set of directories to search.  These can be either in the local
+     filing system or remote ones accessed by http (http://domain/dir/... ).-->
+
+    <references title="Normative References">
+      <!--?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml"?-->
+      &RFC2119;
+      
+
+
+
+    </references>
+
+    <references title="Informative References">
+      <!-- Here we use entities that we defined at the beginning. -->
+      &RFC2137;
+      &RFC2845;
+      &RFC7858;
+      &RFC8484;
+      &RFC8499;
+
+    </references>
+
+    <section anchor="app-additional" title="Additional Stuff">
+      <t>This becomes an Appendix.</t>
+    </section>
+
+ </back>
+</rfc>
