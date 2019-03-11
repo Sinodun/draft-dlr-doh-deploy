@@ -335,22 +335,6 @@
 
 </section>
 
-
-
-<section title="Privacy Considerations">
-    <t>
-      Text goes here
-    </t>
-</section>
-
-
-<section anchor="Security" title="Security Considerations">
-  <t>
-    Text goes here
-  </t>
-</section>
-
-
 <section title="Recommendations">
     <t>
       DoH servers MUST NOT create an alternate root.
@@ -374,6 +358,17 @@
     </t>
 </section>
 
+<section title="Privacy Considerations">
+    <t>
+      Text goes here
+    </t>
+</section>
+
+<section anchor="Security" title="Security Considerations">
+  <t>
+    Text goes here
+  </t>
+</section>
 
 <section anchor="IANA" title="IANA Considerations">
       <t>This memo includes no request to IANA.</t>

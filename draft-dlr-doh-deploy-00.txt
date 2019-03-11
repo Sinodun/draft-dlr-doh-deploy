@@ -92,9 +92,9 @@ Table of Contents
            validating resolver:  . . . . . . . . . . . . . . . . . .   6
      6.4.  DoH server to HTTP server using private dns RRs known
            only to the DoH server  . . . . . . . . . . . . . . . . .   6
-   7.  Privacy Considerations  . . . . . . . . . . . . . . . . . . .   6
-   8.  Security Considerations . . . . . . . . . . . . . . . . . . .   7
-   9.  Recommendations . . . . . . . . . . . . . . . . . . . . . . .   7
+   7.  Recommendations . . . . . . . . . . . . . . . . . . . . . . .   6
+   8.  Privacy Considerations  . . . . . . . . . . . . . . . . . . .   7
+   9.  Security Considerations . . . . . . . . . . . . . . . . . . .   7
    10. IANA Considerations . . . . . . . . . . . . . . . . . . . . .   7
    11. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   7
    12. References  . . . . . . . . . . . . . . . . . . . . . . . . .   7
@@ -325,9 +325,9 @@ Internet-Draft            draft-reid-doh-deploy               March 2019
 
    Placeholder
 
-7.  Privacy Considerations
+7.  Recommendations
 
-   Text goes here
+   DoH servers MUST NOT create an alternate root.
 
 
 
@@ -337,14 +337,6 @@ Dickinson, et al.      Expires September 12, 2019               [Page 6]
 
 Internet-Draft            draft-reid-doh-deploy               March 2019
 
-
-8.  Security Considerations
-
-   Text goes here
-
-9.  Recommendations
-
-   DoH servers MUST NOT create an alternate root.
 
    The responses received over DoH MUST be available in the traditional
    DNS.
@@ -359,6 +351,14 @@ Internet-Draft            draft-reid-doh-deploy               March 2019
    DoH servers MUST support DNSSEC.
 
    DoH clients SHOULD support DNSSEC.
+
+8.  Privacy Considerations
+
+   Text goes here
+
+9.  Security Considerations
+
+   Text goes here
 
 10.  IANA Considerations
 
