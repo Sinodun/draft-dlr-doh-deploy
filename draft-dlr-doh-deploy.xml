@@ -280,7 +280,7 @@
   <section title="Browser Caches">
     <t>
       A web browser maintains a cache of recent DNS data. Responses from DoH servers will affect the
-      contents of that cache. This presents a security risk because it provides a way for DoH
+      contents of that cache. This presents a security risk because it may provide a way for DoH
       servers to arbitrarily manipulate the content of a browser's cache that would not be possible
       with conventional DNS.
     </t>
