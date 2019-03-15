@@ -368,7 +368,7 @@
 
 <section anchor="Security" title="Security Considerations">
   <t>
-    Text goes here
+    Leakage of split DNS queries to a DoH resolver could pose security risks for some networks and users.
   </t>
 </section>
 
