@@ -338,26 +338,16 @@
 </section>
 
 <section title="Recommendations">
-    <t>
-      DoH servers MUST NOT create an alternate root.
-    </t>
-    <t>
-      The responses received over DoH MUST be available in the traditional DNS.
-    </t>
-    <t>
-      The DoH server MAY make choices about which RRs to return if it knows more about the network
-      topology.
-    </t>
-    <t>
-      The DoH server MAY push useful additional RRs if it knows the client is likely to need them
-      soon. Again, they MUST be available in the traditional DNS.
-    </t>
-    <t>
-      DoH servers MUST support DNSSEC.
-    </t>
-    <t>
-      DoH clients SHOULD support DNSSEC.
-    </t>
+    <t><list style='numbers'>
+    	<t>DoH servers MUST NOT create an alternate root.</t>
+    	<t>The responses received over DoH MUST be available in the traditional DNS.</t>
+   	<t>The DoH server MAY make choices about which RRs to return if it knows more about the network
+      topology.</t>
+   	<t>The DoH server MAY push useful additional RRs if it knows the client is likely to need them
+      soon. Again, they MUST be available in the traditional DNS.</t>
+    	<t>DoH servers MUST support DNSSEC.</t>
+	<t>DoH clients SHOULD support DNSSEC.</t>
+     </list></t>
 </section>
 
 <section title="Privacy Considerations">
