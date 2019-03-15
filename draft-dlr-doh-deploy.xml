@@ -191,11 +191,12 @@
     of several recursive resolvers via DHCP or similar network bootstrapping mechanism. These are
     usually the IP addresses of recursive resolvers that are administered by the network
     operator. Users sometimes also change to third-party recursive resolvers. In some cases, they
-    may even operate their own local resolver.
+    may even operate their own local resolver. In a small minority of cases, a network operator may also 
+	  choose to forward DNS queries on to an independently operated recursive resolver.
   </t>
   <t>
-    RFC 8484 defines the protocol for DNS over HTTPS (DoH). When DoH is used, client and server DNS
-    traffic is encrypted using a TLS channel, typically to port 443. DoH clients will have little
+    <xref target="RFC848"/> defines the protocol for DNS over HTTPS (DoH). When DoH is used, client and recursive server DNS
+    traffic is encrypted using a TLS channel, typically using TCP port 443. DoH clients will have little
     need for conventional DNS apart from an initial bootstrap query to find the IP addresses of a
     suitable DoH server. This will mean the bulk of their DNS resolver traffic would bypass an
     operator's DNS resolver infrastructure because that traffic will make use of the resolver
