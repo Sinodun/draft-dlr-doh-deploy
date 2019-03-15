@@ -145,27 +145,27 @@
   
 <section title="Introduction">
     <t>
-      This document is focussed on DoH deployment issues. Several of these issues also occur in 
+      This document is focussed on DNS over HTTPS (DoH) deployment issues. Several of these issues also occur in 
       other DNS transports. However, the authors feel that, at this time, consideration of other
       transports should be made in other documents and in the appropriate working groups.
     </t>
     <t>
-      At present, most traditional DNS traffic is not encrypted. This can pose a privacy challenge for
+      At present, traditional DNS traffic is not encrypted. This can pose a privacy challenge for
       Internet users, because their access to named network resources can potentially be tracked
-      through their DNS queries. In principle, any network element along the path between the user
-      and resolver could observe this unencrypted traffic. DoH eliminates this problem by using TLS
-      to encrypt the queries and responses that are made. These use HTTP rather than the
-      conventional DNS protocol. Furthermore DoH traffic can be intermingled with other HTTPS traffic,
-      making it difficult for an eavesdropper to monitor DNS traffic or even be aware that it is
-      taking place.
+      through their DNS queries because, theoretically speaking, any network element along the path between the user
+      and resolver could observe this and any other unencrypted traffic. DoH eliminates this problem by using TLS
+      to encrypt the queries and responses that are made, though it may introduce other challenges. DoH-based queries and responses use HTTP rather than the
+      conventional DNS protocol. Furthermore, DoH traffic can be intermingled with other HTTPS traffic,
+      making it difficult for a potential eavesdropper to monitor DNS traffic, or for a party to block or 
+	    modify DNS responses, or even be aware that DNS lookups are taking place.
     </t>
     <t>
       A new model of DNS usage is created with DoH. A DoH server takes on the role of the recursive
       resolving server in conventional DNS. DoH clients send DNS queries to DoH servers over DoH
       instead of plaintext DNS queries to a conventional recursive resolving server. This DoH server
-      is likely to be operated and controlled by a third party - i.e. not whoever operates and
+      seems likely to be operated and controlled by a third party - i.e. not whoever operates and
       controls the existing recursive resolver DNS servers in some network. That in turn disrupts
-      the long standing and well understood trust relationships in traditional DNS.
+      the long standing and well understood trust and operational relationships in traditional DNS.
     </t>
 </section>
 
