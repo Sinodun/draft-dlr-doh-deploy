@@ -175,7 +175,8 @@
     DoH Server: A server supporting the DNS over HTTPS is called a "DoH server" to differentiate it
     from a "DNS server" (one that only provides DNS service over one or more of the other transport
     protocols standardised for DNS).  Similarly, a client that supports the DNS over HTTPS is called
-    a "DoH client".
+    a "DoH client". The DoH server is a recursive resolver, handling DNS queries from end users/devices, 
+	  rather than an authoritative DNS server.
   </t>
   <t>
     The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
