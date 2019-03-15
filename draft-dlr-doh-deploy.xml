@@ -150,7 +150,7 @@
       transports should be made in other documents and in the appropriate working groups.
     </t>
     <t>
-      At present, traditional DNS traffic is not encrypted. This can pose a privacy challenge for
+      At present, conventional DNS traffic is not encrypted. This can pose a privacy challenge for
       Internet users, because their access to named network resources can potentially be tracked
       through their DNS queries because, theoretically speaking, any network element along the path between the user
       and resolver could observe this and any other unencrypted traffic. DoH eliminates this problem by using TLS
@@ -165,7 +165,7 @@
       instead of plaintext DNS queries to a conventional recursive resolving server. This DoH server
       seems likely to be operated and controlled by a third party - i.e. not whoever operates and
       controls the existing recursive resolver DNS servers in some network. That in turn disrupts
-      the long standing and well understood trust and operational relationships in traditional DNS.
+      the long standing and well understood trust and operational relationships in conventional DNS.
     </t>
 </section>
 
@@ -195,7 +195,7 @@
 	  choose to forward DNS queries on to an independently operated recursive resolver.
   </t>
   <t>
-    <xref target="RFC848"/> defines the protocol for DNS over HTTPS (DoH). When DoH is used, client and recursive server DNS
+    <xref target="RFC8484"/> defines the protocol for DNS over HTTPS (DoH). When DoH is used, client and recursive server DNS
     traffic is encrypted using a TLS channel, typically using TCP port 443. DoH clients will have little
     need for conventional DNS apart from an initial bootstrap query to find the IP addresses of a
     suitable DoH server. This will mean the bulk of their DNS resolver traffic would bypass an
@@ -203,7 +203,7 @@
     service provided by the DoH server.
   </t>
   <t>
-    DoH displaces the traditional DNS client-server model of clients making queries and waiting for
+    DoH displaces the conventional DNS client-server model of clients making queries and waiting for
     a reply from a server.
   </t>
 </section>
@@ -314,22 +314,22 @@
 </section>
 
 <section title="Use Cases">
-  <section title="DoH server forwarding to a traditional validating resolver:">
+  <section title="DoH only server forwarding to a conventional validating resolver">
     <t>
       Placeholder
     </t>
  </section>
- <section title="DoH server using private dns RRs known only to the DoH server">
+ <section title="DoH only server using dns RRs known internally to the DoH server, the authoritative source of which was not found by recursing the conventional DNS">
    <t>
      Placeholder
    </t>
  </section>
- <section title="DoH server to HTTP server forwarding to a traditional validating resolver:">
+ <section title="DoH http server forwarding to a conventional validating resolver">
    <t>
      Placeholder
    </t>
  </section>
- <section title="DoH server to HTTP server using private dns RRs known only to the DoH server">
+ <section title="DoH http server using dns RRs known internally to the DoH server, the authoritative source of which was not found by recursing the conventional DNS">
    <t>
      Placeholder
    </t>
@@ -340,11 +340,11 @@
 <section title="Recommendations">
     <t><list style='numbers'>
     	<t>DoH servers MUST NOT create an alternate root.</t>
-    	<t>The responses received over DoH MUST be available in the traditional DNS.</t>
+    	<t>The responses received over DoH MUST be available in the conventional DNS.</t>
    	<t>The DoH server MAY make choices about which RRs to return if it knows more about the network
       topology.</t>
    	<t>The DoH server MAY push useful additional RRs if it knows the client is likely to need them
-      soon. Again, they MUST be available in the traditional DNS.</t>
+      soon. Again, they MUST be available in the conventional DNS.</t>
     	<t>DoH servers MUST support DNSSEC.</t>
 	<t>DoH clients SHOULD support DNSSEC.</t>
      </list></t>
