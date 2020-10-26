@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="US-ASCII"?>
-<!-- $Id: general,v 1.2 2019/03/03 20:54:13 jim Exp $ -->
+<!-- $Id: deploy-doh,v 1.2 2020/10/22 10:29:52 jim Exp $ -->
 <!-- This template is for creating an Internet Draft using xml2rfc,
      which is available here: http://xml.resource.org. -->
 <!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
@@ -13,9 +13,12 @@
 <!ENTITY RFC2845 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2845.xml">
 <!ENTITY RFC3022 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3022.xml">
 <!ENTITY RFC3552 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3552.xml">
+<!ENTITY RFC3597 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3597.xml">
+<!ENTITY RFC3645 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3645.xml">
 <!ENTITY RFC6146 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6146.xml">
 <!ENTITY RFC6147 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6147.xml">
 <!ENTITY RFC6950 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6950.xml">
+<!ENTITY RFC7816 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7816.xml">
 <!ENTITY RFC7858 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7858.xml">
 <!ENTITY RFC7871 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7871.xml">
 <!ENTITY RFC8446 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.8446.xml">
@@ -59,7 +62,7 @@
     <!-- The abbreviated title is used in the page header - it is only necessary if the 
          full title is longer than 39 characters -->
 
-    <title abbrev="draft-reid-doh-deploy">
+    <title abbrev="draft-dlr-doh-deploy">
 	   DNS over HTTPS (DoH) Deployment Considerations 
     </title>
 
@@ -108,33 +111,37 @@
       </address>
     </author>
 
-    <date month="March" year="2019" />
+    <date month="October" year="2020" />
 
     <!-- Meta-data Declarations -->
 
      <area>Applications and Real-Time</area>
 
-    <workgroup>DoH</workgroup>
+    <workgroup>TBD</workgroup>
 
     <keyword>template</keyword>
 
-    <!-- Keywords will be incorporated into HTML output
-         files in a meta tag but they have no effect on text or nroff
-         output. If you submit your draft to the RFC Editor, the
-         keywords will be used for the search engine. -->
-
     <abstract>
       <t>
-	The development of DNS over HTTPS (DoH), defined in RFC8484, introduces a major change to
-	the way in which devices and applications are able to use the Domain Name System. DoH traffic
-	uses HTTP over a TLS session. DoH clients and servers can use HTTP primitives to request and
-	supply DNS data instead of conventional DNS queries and responses using port 53. This
-	presents a number of challenges, including new risks and security concerns, for those
-	operating and running IP-based networks.
+	Deployment of DNS over HTTPS (DoH) <xref target="RFC8484"></xref>
+	introduces a major change to the way in which devices and
+	applications are able to use the Domain Name System. DoH traffic
+	uses HTTP over a TLS session. DoH clients and servers can use
+	HTTP primitives to request and supply DNS data instead of
+	conventional DNS queries and responses using port 53. This
+	presents a number of challenges, including new risks and
+	security concerns.
       </t>
       <t>
-	The objective of this document is to describe these challenges and provide advice on how to
-	minimise their impact.
+	The objective of this document is to describe these challenges
+	and provide advice on how to minimise their impact.
+      </t>
+      <t>
+	It is also likely that DoH servers could be operated and controlled by
+	website administrators and developers who are not familiar with the
+	DNS. They may need guidance on how to provide DoH services that are
+	aligned with best DNS practices. This document is intended to bridge the
+	gap between the HTTP and DNS communities.
       </t>
     </abstract>
 
@@ -144,28 +151,50 @@
 
   
 <section title="Introduction">
-    <t>
-      This document is focussed on DNS over HTTPS (DoH) deployment issues. Several of these issues also occur in 
-      other DNS transports. However, the authors feel that, at this time, consideration of other
-      transports should be made in other documents and in the appropriate working groups.
-    </t>
-    <t>
-      At present, conventional DNS traffic is not encrypted. This can pose a privacy challenge for
-      Internet users, because their access to named network resources can potentially be tracked
-      through their DNS queries because, theoretically speaking, any network element along the path between the user
-      and resolver could observe this and any other unencrypted traffic. DoH eliminates this problem by using TLS
-      to encrypt the queries and responses that are made, though it may introduce other challenges. DoH-based queries and responses use HTTP rather than the
-      conventional DNS protocol. Furthermore, DoH traffic can be intermingled with other HTTPS traffic,
-      making it difficult for a potential eavesdropper to monitor DNS traffic, or for a party to block or 
-	    modify DNS responses, or even be aware that DNS lookups are taking place.
-    </t>
-    <t>
-      A new model of DNS usage is created with DoH. A DoH server takes on the role of the recursive
-      resolving server in conventional DNS. DoH clients send DNS queries to DoH servers over DoH
-      instead of plaintext DNS queries to a conventional recursive resolving server. This DoH server
-      seems likely to be operated and controlled by a third party - i.e. not whoever operates and
-      controls the existing recursive resolver DNS servers in some network. That in turn disrupts
-      the long standing and well understood trust and operational relationships in conventional DNS.
+  <t>
+    Traditional DNS traffic is not encrypted. This poses an obvious privacy
+    challenge for Internet users, because their access to named network
+    resources could potentially be tracked through their DNS queries. Measures
+    like Query Minimisation <xref target="RFC7816"></xref> can reduce but
+    not eliminate this exposure. In principle, any network element in the
+    path between the user and resolver could observe this unencrypted traffic.
+  </t>
+  <t>
+    DoH partially eliminates this problem by using TLS to encrypt the queries
+    and responses that are made. These use HTTP rather than the conventional DNS
+    protocol. Furthermore DoH traffic is intermingled with other HTTPS traffic,
+    making it difficult for an eavesdropper to monitor DNS traffic or even be
+    aware that it is taking place. It should be noted however that a user's DNS
+    queries could still be monitored by the DoH server(s) which receive them.
+  </t>
+  <t>
+    The conventional model for DNS transactions involves a stub resolver,
+    resolving servers and authoritative DNS servers. The stub resolver is
+    usually part of the system software and is used by applications to make
+    DNS queries and receive responses from recursive servers which are typically
+    provided by an ISP or the local network administrator. Recursive servers
+    answer queries from stub resolvers by traversing a hierarchy of
+    authoritative DNS servers, querying them for data about some domain name and
+    ultimately returning that response to the stub resolver that initiated the
+    orginal query.
+  </t>
+  <t>
+    New models of DNS usage are created with DoH. A DoH server typically occupies
+    the role of the recursive resolving server in conventional DNS. DoH clients
+    send DNS queries to DoH servers over DoH instead of using a stub resolver to
+    send plaintext DNS queries to a conventional recursive resolving
+    server. This DoH server will sometimes be operated and controlled by a third
+    party - i.e. not whoever operates and controls the existing recursive
+    resolver DNS servers in some network. That in turn disrupts the long
+    standing and well understood (if sometimes poorly documented) trust
+    relationships in traditional DNS.
+  </t>
+  <t>
+    HTTP servers would be able to offer DoH service without the need for
+    conventional DNS query-response transactions. For instance, HTTP servers
+    could just return application/dns-message elements for the URIs in some web
+    page, saving the web client from issuing DoH (or plaintext DNS) queries to
+    resolve the hostnames in those URIs.
     </t>
 </section>
 
@@ -175,161 +204,194 @@
     DoH Server: A server supporting the DNS over HTTPS is called a "DoH server" to differentiate it
     from a "DNS server" (one that only provides DNS service over one or more of the other transport
     protocols standardised for DNS).  Similarly, a client that supports the DNS over HTTPS is called
-    a "DoH client". The DoH server is a recursive resolver, handling DNS queries from end users/devices, 
-	  rather than an authoritative DNS server.
+    a "DoH client".
+  </t>
+  <t>
+    A detailed glossary of DNS terms can  be found in <xref target="RFC8499">RFC
+    8499</xref>.
   </t>
   <t>
     The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
     "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in
-    <xref target="RFC2119">RFC 2119</xref>.</t>
+    <xref target="RFC2119">RFC 2119</xref>.
+  </t>
 </section>
 
 
 <section title="Contrasting DoH and Conventional DNS">
   <t>
-    With conventional DNS today, using UDP or TCP port 53, most users are assigned the IP addresses
-    of several recursive resolvers via DHCP or similar network bootstrapping mechanism. These are
-    usually the IP addresses of recursive resolvers that are administered by the network
-    operator. Users sometimes also change to third-party recursive resolvers. In some cases, they
-    may even operate their own local resolver. In a small minority of cases, a network operator may also 
-	  choose to forward DNS queries on to an independently operated recursive resolver.
+    With conventional DNS today, using UDP or TCP port 53, most users are
+    assigned the IP addresses of several recursive resolvers via DHCP or similar
+    network bootstrapping mechanism. These are usually the IP addresses of
+    recursive resolvers that are administered by the network operator.
   </t>
   <t>
-    <xref target="RFC8484"/> defines the protocol for DNS over HTTPS (DoH). When DoH is used, client and recursive server DNS
-    traffic is encrypted using a TLS channel, typically using TCP port 443. DoH clients will have little
-    need for conventional DNS apart from an initial bootstrap query to find the IP addresses of a
-    suitable DoH server. This will mean the bulk of their DNS resolver traffic would bypass an
-    operator's DNS resolver infrastructure because that traffic will make use of the resolver
-    service provided by the DoH server.
+    When DoH is used, client and server DNS traffic is encrypted using a TLS
+    channel, typically to port 443. DoH clients will generally have little need for
+    conventional DNS apart from an initial bootstrap query to find the IP
+    addresses of a suitable DoH server. The bulk of their DNS resolver traffic
+    could bypass the current network's DNS resolver infrastructure because that
+    traffic will make use of the resolver service provided by the DoH server.
   </t>
   <t>
-    DoH displaces the conventional DNS client-server model of clients making queries and waiting for
-    a reply from a server.
+    At present there is no standard for DoH server discovery. Browser vendors,
+    who have been first to use DoH, have so far adopted ad-hoc solutions. One
+    approach is to embed the names or URIs for public DoH resolvers in the
+    browser's configuration. Another is to try DoH opportunistically: if there
+    is a DoH service at the IP address(es) found in the device's stub resolver
+    configuration, the browser uses that.
   </t>
 </section>
 
 
 <section title="DoH Impact on Existing DNS Behaviour">
   <section title="DNS servers using Access Control Lists">
-       <t>
-	When a DoH server performs the role of a recursive resolving DNS server, it queries other
-	DNS or DoH servers to resolve the queries received from DoH clients. These outbound queries
-	will use a source IP address of the DoH server, not the originating client. This may
-	sometimes cause operational or security problems, for instance when the DoH server queries
-	another DoH or DNS server that uses access control lists based on source IP address. In this
-	case, the ACL applies to the DoH server and not the original DoH client. That can mean the
-	DoH client eventually gets a different response than if it made the query itself. In
-	particular, this may be a problem for IXFR or AXFR queries because authoritative DNS servers
-	commonly use ACLs to restrict these queries.
-       </t>
-       <t>
-       This problem becomes more acute for dynamic updates <xref target="RFC2137">RFC
-       2137</xref>. If an ACL-based on source IP address is used to accept or reject these requests,
-       it will be the address of the DoH server rather than the DoH client which determines the
-       outcome. However Transaction Signatures (TSIG) <xref target="RFC2845">RFC2845</xref> are more
-       commonly used for authenticating dynamic update requests. It is therefore essential for DoH
-       servers to ensure that TSIG resource records received from DoH clients are included in
-       outgoing requests. DoH servers MUST ensure TSIG resource records included in any requests
-       received from DoH clients are included whenever the DoH server has to contact another DoH or
-       DNS server to satisfy that request. Similarly, DoH servers MUST return to DoH clients any TSIG
-       resource records that are received from DNS or DoH servers.
+    <t>
+      When a DoH server performs the role of a recursive resolving DNS server,
+      it queries other DNS or DoH servers to resolve the queries received from
+      DoH clients. These outbound queries will use a source IP address of the
+      DoH server, not that of the originating client. This may sometimes cause
+      operational or security problems, for instance when the DoH server queries
+      another DoH or DNS server that uses access control lists based on source
+      IP address. In this case, the ACL applies to the source address of the DoH
+      server and not the original DoH client. That can mean the DoH client
+      eventually gets a different response than if it had made the query
+      itself. In particular, this may be a problem for IXFR or AXFR queries
+      because authoritative DNS servers commonly use ACLs to restrict these
+      queries.
+    </t>
+    <t>
+       This problem becomes more acute for dynamic updates <xref
+       target="RFC2137"></xref>. If an ACL based on source IP address is used to
+       accept or reject these requests, it will be the address of the DoH server
+       rather than the DoH client which determines the outcome. However
+       Transaction Signatures (TSIG) <xref target="RFC2845"></xref> and GSS-TSIG
+       <xref target="RFC3645"></xref> are commonly used for authenticating
+       dynamic update requests. It is therefore essential that DoH servers do not
+       interfere with any TSIG resource records in queries or responses. DoH
+       servers MUST ensure TSIG resource records included in any requests
+       received from DoH clients are included whenever the DoH server has to
+       contact another DoH or DNS server to satisfy that request. Similarly, DoH
+       servers MUST return to DoH clients any TSIG resource records that are
+       received from DNS or DoH servers.
        </t>
   </section>
   <section title="Split DNS">
-       <t>
-	Split DNS configurations <xref target="RFC8499">RFC8499</xref> are widely used, particularly
-	in enterprise networks. These have an internal name space which is not visible to the public
-	Internet. Resolving DNS servers in such networks are configured to only provide answers for
-	this name internal space to requests from clients on the enterprise network. Applications and
-	devices making DoH requests on networks which use split DNS will not be able to access these
-	internal names unless their requests are sent to a suitably configured DoH server. This
-	probably means that networks using split DNS SHOULD provide DoH servers which are able to
-	provide answers for the internal name space.  
-       </t>
-       <t>
-       Use of third-party DoH servers is not recommended in networks which have split DNS. These
-       servers are unlikely to know about the configuration of the local network and will therefore
-       be unable to resolve or otherwise properly handle requests for the internal name space. This 
-       also presents security and privacy risks. Requests from DoH clients for internal names will
-       leak, disclosing sensitive information to an external DoH server which is operated and
-       controlled by a third party.  DoH clients on networks using split DNS SHOULD query DoH
-       servers which have been configured for that network's internal name space.  
+    <t>
+      Split DNS configurations <xref target="RFC8499"></xref> are widely
+      used, particularly in enterprise networks. These have an internal name
+      space which is not visible to the public Internet. Resolving DNS servers
+      in such networks are usually configured to only provide answers for this
+      name internal space to requests from clients on the enterprise network.
+    </t>
+    <t>
+      Applications and devices making DoH requests on networks which use split
+      DNS will not be able to access these internal names unless their requests
+      are sent to a suitably configured DoH server. This probably means that
+      networks using split DNS SHOULD provide DoH servers which are able to
+      provide answers for their internal name space. It therefore follows that
+      networks using split DNS SHOULD ensure that DoH clients query local DoH
+      servers which have been configured for that network's internal name space.
+    </t>
+    <t>
+      Use of third-party DoH servers is not recommended in networks which have
+      split DNS. These servers are unlikely to know about the configuration of
+      the local network and will therefore be unable to resolve or otherwise
+      properly handle requests for the internal name space. When third-party DoH
+      servers are used in these networks, it also presents security and privacy
+      risks. Requests from DoH clients for internal names will leak, disclosing
+      this potentially sensitive information to an external DoH server which is
+      operated and controlled by a third party.
        </t>
   </section>
   <section title="Secure DNS (DNSSEC)">
     <t>
-      <xref target="RFC8484">RFC 8484</xref> explains that interactions between a DoH server and
-      client benefit from the transport security provided by HTTPS and that DoH does not provide
-      message integrity. Put simply, although a DoH client can be sure it received exactly the data
-      sent by a DoH server, it does not know if that server is telling the truth. That can only be
-      verified by DNSSEC validation, assuming that the DNS data are signed. Therefore a
-      security-conscious DoH client SHOULD support DNSSEC and perform DNSSEC validation by
-      itself. In some circumstances, a DoH client MAY trust a DoH server to validate signed
-      responses on their behalf but MUST take full account of the conseqences of doing so.
+      RFC 8484 explains that interactions between a DoH server and client
+      benefit from the transport security provided by HTTPS and that DoH does
+      not provide message integrity. Although a DoH client can be sure it
+      received exactly the data sent by a DoH server, it does not know if that
+      server is telling the truth. That can only be determined by DNSSEC
+      validation, assuming that the DNS data are properly signed. Therefore a
+      security-conscious DoH client SHOULD support DNSSEC and perform DNSSEC
+      validation by itself. DoH clients MAY trust a DoH server to validate
+      signed responses on their behalf but MUST take full account of the
+      consequences of doing so.
+    </t>
+  </section>
+  <section title="DNS Headers, OP Codes and EDNS Options">
+    <t>
+      DoH servers MUST check the headers and opcodes on inbound DoH requests and
+      act accordingly. In particular, DoH servers MUST NOT assume that those
+      requests are queries unless both the QR bit and Opcode header are set to
+      zero. Relevant header and EDNS bits (DO, CD, etc) on incoming queries MUST
+      be reflected in the outgoing DNS or DoH queries needed to resolve the
+      original request. [Remember Community DNS treating DNS responses as
+      queries?]
+    </t>
+    <t>
+      To do: add clarifications on behaviour around EDNS goop - padding, ECN,
+      keepalive, extended error code, DNS cookies, etc
     </t>
   </section>
   <section title="Multicast DNS">
-	 <t>
-	   Need to say something about this and .local
-	 </t>
+    <t>
+      Need to say something about this and .local? Should DoH services need
+      to know or care about it?
+    </t>
   </section>
 </section>
 
 
-<section title="DoH Impact on Web Behaviour">
+<section title="DoH Impact on Browser Behaviour">
   <section title="Browser Caches">
     <t>
-      A web browser maintains a cache of recent DNS data. Responses from DoH servers will affect the
-      contents of that cache. This presents a security risk because it may provide a way for DoH
-      servers to arbitrarily manipulate the content of a browser's cache that would not be possible
-      with conventional DNS.
+      A web browser maintains a cache of recent DNS data. Responses from DoH
+      servers will affect the contents of that cache. This presents a security
+      risk because DoH servers could arbitrarily manipulate the content of a
+      browser's cache in a way that would not be possible with conventional
+      DNS. DoH servers may be able to populate a browser's cache without the
+      browser making DNS (or DoH) queries by sending arbitrary
+      application/dns-message elements in the HTML needed to render a web page.
     </t>
     <t>
-      DoH servers SHOULD NOT send DoH data (i.e. application/dns-message elements) unrelated to the
-      request made by a DoH Client. Similarly, a web server SHOULD NOT send DoH data that does not
-      correspond to any of the URIs in the HTML which is returned. i.e. If all the URIs on some web
-      page are for foo.example.com, the web server SHOULD NOT send application/dns-message elements
-      for bar.example.com or example.net. DoH clients SHOULD ignore such unrelated DoH data sent by
-      a DoH or web server. DoH clients MUST NOT cache such data.
-    </t>
-    <t>
-      Browser caches MUST respect the TTL in the response DNS RRSet.
-    </t>
-  </section>
-  <section title="Interaction with DoH Unaware Web Proxies">
-    <t>
-      Placeholder
-    </t>
-  </section>
-    <section title="Interaction with DoH Aware Web Proxies">
-    <t>
-      DoH aware web proxies MUST respect the TTL in the response DNS RRSet.
+      DoH servers SHOULD NOT send DoH data (i.e. application/dns-message
+      elements) unrelated to the request made by a DoH Client. Similarly, a web
+      server SHOULD NOT send DoH data that does not correspond to any of the
+      URIs in the HTML which is returned. i.e. If all the URIs on some web page
+      are for foo.example.com, the web server SHOULD NOT send
+      application/dns-message elements for bar.example.com or example.net. DoH
+      clients SHOULD ignore such unrelated DoH data sent by a DoH or web
+      server. DoH clients MUST NOT cache such data.
     </t>
   </section>
   <section title="What else?">
     <t>
      There have to be some server PUSH horrors here
     </t>
+    <t>
+      Say something about the evils of web cookies and related spyware
+      (trackers, beacons, etc)?
+    </t>
   </section>
 </section>
 
 <section title="Use Cases">
-  <section title="DoH only server forwarding to a conventional validating resolver">
+  <section title="DoH server forwarding to a traditional validating resolver:">
     <t>
       Placeholder
     </t>
  </section>
- <section title="DoH only server using dns RRs known internally to the DoH server, the authoritative source of which was not found by recursing the conventional DNS">
+ <section title="DoH server using private DNS RRs known only to the DoH server">
    <t>
      Placeholder
    </t>
  </section>
- <section title="DoH http server forwarding to a conventional validating resolver">
+ <section title="DoH server to HTTP server forwarding to a traditional validating resolver:">
    <t>
      Placeholder
    </t>
  </section>
- <section title="DoH http server using dns RRs known internally to the DoH server, the authoritative source of which was not found by recursing the conventional DNS">
+ <section title="DoH server to HTTP server using private dns RRs known only to the DoH server">
    <t>
      Placeholder
    </t>
@@ -337,30 +399,69 @@
 
 </section>
 
-<section title="Recommendations">
-    <t><list style='numbers'>
-    	<t>DoH servers MUST NOT create an alternate root.</t>
-    	<t>The responses received over DoH MUST be available in the conventional DNS.</t>
-   	<t>The DoH server MAY make choices about which RRs to return if it knows more about the network
-      topology.</t>
-   	<t>The DoH server MAY push useful additional RRs if it knows the client is likely to need them
-      soon. Again, they MUST be available in the conventional DNS.</t>
-    	<t>DoH servers MUST support DNSSEC.</t>
-	<t>DoH clients SHOULD support DNSSEC.</t>
-     </list></t>
-</section>
 
-<section title="Privacy Considerations">
+
+<section title="Privacy Concerns">
     <t>
       Text goes here
     </t>
 </section>
 
+
 <section anchor="Security" title="Security Considerations">
   <t>
-    Leakage of split DNS queries to a DoH resolver could pose security risks for some networks and users.
+    Text goes here
   </t>
 </section>
+
+
+<section title="Recommendations">
+    <t>
+      DoH servers on the public Internet MUST NOT create an alternate root or
+      publish data for TLDs that have not been created through ICANN or IETF
+      processes. DoH servers on private networks MAY use alternate roots and/or
+      ad-hoc TLDs provided these name spaces do not leak to the public Internet.
+    </t>
+    <t>
+      The responses received over DoH MUST be available in the traditional DNS.
+    </t>
+    <t>
+      A DoH server MAY make choices about which RRs to return if it knows more
+      about the network or client locality, provided that does not compromise DNSSEC
+      validation.
+    </t>
+    <t>
+      The DoH server MAY push useful additional RRs to DoH Client if the server
+      knows the client is likely to need those RRs soon. Again, these RRs MUST be
+      available in the traditional DNS.
+    </t>
+    <t>
+      DoH servers and clients MUST handle unknown RRtypes correctly: ie support
+      <xref target="RFC3597">RFC 3597</xref>.
+    </t>
+    <t>
+      DoH servers MUST support DNSSEC validation.
+    </t>
+    <t>
+      DoH clients SHOULD support DNSSEC validation.
+    </t>
+    <t>
+      DoH servers and clients SHOULD support Transaction Signatures (TSIG). Although
+      the message integrity checking offered by TSIG is redundant when DNS
+      transactions are carried over a TLS channel, TSIG offers protection
+      against replay attacks. This may be useful for some types of DNS
+      transactions.
+    </t>
+    <t>
+      DoH servers MUST honour DNS error codes and extended error codes
+      [draft-ietf-dnsop-extended-error-16]. These MUST be returned to DoH
+      clients. Use of HTTP error codes SHOULD complement these DNS error codes
+      and MUST NOT replace them. DNS error codes have specific meaning and these
+      semantics may not always be readily conveyed in an HTTP error code.
+    </t>
+      
+</section>
+
 
 <section anchor="IANA" title="IANA Considerations">
       <t>This memo includes no request to IANA.</t>
@@ -378,18 +479,6 @@
   <!--  *****BACK MATTER ***** -->
 
 <back>
-    <!-- References split into informative and normative -->
-
-    <!-- There are 2 ways to insert reference entries from the citation libraries:
-     1. define an ENTITY at the top, and use "ampersand character"RFC2629; here (as shown)
-     2. simply use a PI "less than character"?rfc include="reference.RFC.2119.xml"?> here
-        (for I-Ds: include="reference.I-D.narten-iana-considerations-rfc2434bis.xml")
-
-     Both are cited textually in the same manner: by using xref elements.
-     If you use the PI option, xml2rfc will, by default, try to find included files in the same
-     directory as the including file. You can also define the XML_LIBRARY environment variable
-     with a value containing a set of directories to search.  These can be either in the local
-     filing system or remote ones accessed by http (http://domain/dir/... ).-->
 
     <references title="Normative References">
       <!--?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml"?-->
@@ -404,7 +493,9 @@
       <!-- Here we use entities that we defined at the beginning. -->
       &RFC2137;
       &RFC2845;
-      &RFC7858;
+      &RFC3597;
+      &RFC3645;
+      &RFC7816;
       &RFC8484;
       &RFC8499;
 

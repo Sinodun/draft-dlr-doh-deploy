@@ -2,13 +2,13 @@
 
 
 
-DoH                                                         J. Dickinson
+TBD                                                         J. Dickinson
 Internet-Draft                         Sinodun Internet Technologies Ltd
 Intended status: Informational                              J. Livingood
-Expires: September 16, 2019                                      Comcast
+Expires: April 29, 2021                                          Comcast
                                                                  J. Reid
                                                                 RTFM llp
-                                                          March 15, 2019
+                                                        October 26, 2020
 
 
              DNS over HTTPS (DoH) Deployment Considerations
@@ -16,17 +16,22 @@ Expires: September 16, 2019                                      Comcast
 
 Abstract
 
-   The development of DNS over HTTPS (DoH), defined in RFC8484,
-   introduces a major change to the way in which devices and
-   applications are able to use the Domain Name System.  DoH traffic
-   uses HTTP over a TLS session.  DoH clients and servers can use HTTP
-   primitives to request and supply DNS data instead of conventional DNS
-   queries and responses using port 53.  This presents a number of
-   challenges, including new risks and security concerns, for those
-   operating and running IP-based networks.
+   Deployment of DNS over HTTPS (DoH) [RFC8484] introduces a major
+   change to the way in which devices and applications are able to use
+   the Domain Name System.  DoH traffic uses HTTP over a TLS session.
+   DoH clients and servers can use HTTP primitives to request and supply
+   DNS data instead of conventional DNS queries and responses using port
+   53.  This presents a number of challenges, including new risks and
+   security concerns.
 
    The objective of this document is to describe these challenges and
    provide advice on how to minimise their impact.
+
+   It is also likely that DoH servers could be operated and controlled
+   by website administrators and developers who are not familiar with
+   the DNS.  They may need guidance on how to provide DoH services that
+   are aligned with best DNS practices.  This document is intended to
+   bridge the gap between the HTTP and DNS communities.
 
 Status of This Memo
 
@@ -43,20 +48,20 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on September 16, 2019.
+   This Internet-Draft will expire on April 29, 2021.
+
+
+
+
+Dickinson, et al.        Expires April 29, 2021                 [Page 1]
+
+Internet-Draft            draft-dlr-doh-deploy              October 2020
+
 
 Copyright Notice
 
-   Copyright (c) 2019 IETF Trust and the persons identified as the
+   Copyright (c) 2020 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
-
-
-
-
-Dickinson, et al.      Expires September 16, 2019               [Page 1]
-
-Internet-Draft            draft-reid-doh-deploy               March 2019
-
 
    This document is subject to BCP 78 and the IETF Trust's Legal
    Provisions Relating to IETF Documents
@@ -71,80 +76,99 @@ Internet-Draft            draft-reid-doh-deploy               March 2019
 Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   3
-   2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   3
+   2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   4
    3.  Contrasting DoH and Conventional DNS  . . . . . . . . . . . .   4
    4.  DoH Impact on Existing DNS Behaviour  . . . . . . . . . . . .   4
      4.1.  DNS servers using Access Control Lists  . . . . . . . . .   4
      4.2.  Split DNS . . . . . . . . . . . . . . . . . . . . . . . .   5
-     4.3.  Secure DNS (DNSSEC) . . . . . . . . . . . . . . . . . . .   5
-     4.4.  Multicast DNS . . . . . . . . . . . . . . . . . . . . . .   6
-   5.  DoH Impact on Web Behaviour . . . . . . . . . . . . . . . . .   6
+     4.3.  Secure DNS (DNSSEC) . . . . . . . . . . . . . . . . . . .   6
+     4.4.  DNS Headers, OP Codes and EDNS Options  . . . . . . . . .   6
+     4.5.  Multicast DNS . . . . . . . . . . . . . . . . . . . . . .   6
+   5.  DoH Impact on Browser Behaviour . . . . . . . . . . . . . . .   6
      5.1.  Browser Caches  . . . . . . . . . . . . . . . . . . . . .   6
-     5.2.  Interaction with DoH Unaware Web Proxies  . . . . . . . .   6
-     5.3.  Interaction with DoH Aware Web Proxies  . . . . . . . . .   6
-     5.4.  What else?  . . . . . . . . . . . . . . . . . . . . . . .   6
-   6.  Use Cases . . . . . . . . . . . . . . . . . . . . . . . . . .   6
-     6.1.  DoH only server forwarding to a conventional validating
-           resolver  . . . . . . . . . . . . . . . . . . . . . . . .   6
-     6.2.  DoH only server using dns RRs known internally to the DoH
-           server, the authoritative source of which was not found
-           by recursing the conventional DNS . . . . . . . . . . . .   7
-     6.3.  DoH http server forwarding to a conventional validating
-           resolver  . . . . . . . . . . . . . . . . . . . . . . . .   7
-     6.4.  DoH http server using dns RRs known internally to the DoH
-           server, the authoritative source of which was not found
-           by recursing the conventional DNS . . . . . . . . . . . .   7
-   7.  Recommendations . . . . . . . . . . . . . . . . . . . . . . .   7
-   8.  Privacy Considerations  . . . . . . . . . . . . . . . . . . .   7
-   9.  Security Considerations . . . . . . . . . . . . . . . . . . .   7
-   10. IANA Considerations . . . . . . . . . . . . . . . . . . . . .   7
+     5.2.  What else?  . . . . . . . . . . . . . . . . . . . . . . .   7
+   6.  Use Cases . . . . . . . . . . . . . . . . . . . . . . . . . .   7
+     6.1.  DoH server forwarding to a traditional validating
+           resolver: . . . . . . . . . . . . . . . . . . . . . . . .   7
+     6.2.  DoH server using private DNS RRs known only to the DoH
+           server  . . . . . . . . . . . . . . . . . . . . . . . . .   7
+     6.3.  DoH server to HTTP server forwarding to a traditional
+           validating resolver:  . . . . . . . . . . . . . . . . . .   7
+     6.4.  DoH server to HTTP server using private dns RRs known
+           only to the DoH server  . . . . . . . . . . . . . . . . .   7
+   7.  Privacy Concerns  . . . . . . . . . . . . . . . . . . . . . .   7
+   8.  Security Considerations . . . . . . . . . . . . . . . . . . .   7
+   9.  Recommendations . . . . . . . . . . . . . . . . . . . . . . .   7
+   10. IANA Considerations . . . . . . . . . . . . . . . . . . . . .   8
    11. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   8
    12. References  . . . . . . . . . . . . . . . . . . . . . . . . .   8
      12.1.  Normative References . . . . . . . . . . . . . . . . . .   8
-     12.2.  Informative References . . . . . . . . . . . . . . . . .   8
-   Appendix A.  Additional Stuff . . . . . . . . . . . . . . . . . .   8
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   8
+     12.2.  Informative References . . . . . . . . . . . . . . . . .   9
+   Appendix A.  Additional Stuff . . . . . . . . . . . . . . . . . .   9
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   9
 
 
 
-
-
-Dickinson, et al.      Expires September 16, 2019               [Page 2]
+Dickinson, et al.        Expires April 29, 2021                 [Page 2]
 
-Internet-Draft            draft-reid-doh-deploy               March 2019
+Internet-Draft            draft-dlr-doh-deploy              October 2020
 
 
 1.  Introduction
 
-   This document is focussed on DNS over HTTPS (DoH) deployment issues.
-   Several of these issues also occur in other DNS transports.  However,
-   the authors feel that, at this time, consideration of other
-   transports should be made in other documents and in the appropriate
-   working groups.
+   Traditional DNS traffic is not encrypted.  This poses an obvious
+   privacy challenge for Internet users, because their access to named
+   network resources could potentially be tracked through their DNS
+   queries.  Measures like Query Minimisation [RFC7816] can reduce but
+   not eliminate this exposure.  In principle, any network element in
+   the path between the user and resolver could observe this unencrypted
+   traffic.
 
-   At present, conventional DNS traffic is not encrypted.  This can pose
-   a privacy challenge for Internet users, because their access to named
-   network resources can potentially be tracked through their DNS
-   queries because, theoretically speaking, any network element along
-   the path between the user and resolver could observe this and any
-   other unencrypted traffic.  DoH eliminates this problem by using TLS
-   to encrypt the queries and responses that are made, though it may
-   introduce other challenges.  DoH-based queries and responses use HTTP
-   rather than the conventional DNS protocol.  Furthermore, DoH traffic
-   can be intermingled with other HTTPS traffic, making it difficult for
-   a potential eavesdropper to monitor DNS traffic, or for a party to
-   block or modify DNS responses, or even be aware that DNS lookups are
-   taking place.
+   DoH partially eliminates this problem by using TLS to encrypt the
+   queries and responses that are made.  These use HTTP rather than the
+   conventional DNS protocol.  Furthermore DoH traffic is intermingled
+   with other HTTPS traffic, making it difficult for an eavesdropper to
+   monitor DNS traffic or even be aware that it is taking place.  It
+   should be noted however that a user's DNS queries could still be
+   monitored by the DoH server(s) which receive them.
 
-   A new model of DNS usage is created with DoH.  A DoH server takes on
-   the role of the recursive resolving server in conventional DNS.  DoH
-   clients send DNS queries to DoH servers over DoH instead of plaintext
-   DNS queries to a conventional recursive resolving server.  This DoH
-   server seems likely to be operated and controlled by a third party -
-   i.e. not whoever operates and controls the existing recursive
-   resolver DNS servers in some network.  That in turn disrupts the long
-   standing and well understood trust and operational relationships in
-   conventional DNS.
+   The conventional model for DNS transactions involves a stub resolver,
+   resolving servers and authoritative DNS servers.  The stub resolver
+   is usually part of the system software and is used by applications to
+   make DNS queries and receive responses from recursive servers which
+   are typically provided by an ISP or the local network administrator.
+   Recursive servers answer queries from stub resolvers by traversing a
+   hierarchy of authoritative DNS servers, querying them for data about
+   some domain name and ultimately returning that response to the stub
+   resolver that initiated the orginal query.
+
+   New models of DNS usage are created with DoH.  A DoH server typically
+   occupies the role of the recursive resolving server in conventional
+   DNS.  DoH clients send DNS queries to DoH servers over DoH instead of
+   using a stub resolver to send plaintext DNS queries to a conventional
+   recursive resolving server.  This DoH server will sometimes be
+   operated and controlled by a third party - i.e. not whoever operates
+   and controls the existing recursive resolver DNS servers in some
+   network.  That in turn disrupts the long standing and well understood
+   (if sometimes poorly documented) trust relationships in traditional
+   DNS.
+
+   HTTP servers would be able to offer DoH service without the need for
+   conventional DNS query-response transactions.  For instance, HTTP
+   servers could just return application/dns-message elements for the
+   URIs in some web page, saving the web client from issuing DoH (or
+   plaintext DNS) queries to resolve the hostnames in those URIs.
+
+
+
+
+
+
+
+Dickinson, et al.        Expires April 29, 2021                 [Page 3]
+
+Internet-Draft            draft-dlr-doh-deploy              October 2020
+
 
 2.  Terminology
 
@@ -152,23 +176,13 @@ Internet-Draft            draft-reid-doh-deploy               March 2019
    server" to differentiate it from a "DNS server" (one that only
    provides DNS service over one or more of the other transport
    protocols standardised for DNS).  Similarly, a client that supports
-   the DNS over HTTPS is called a "DoH client".  The DoH server is a
-   recursive resolver, handling DNS queries from end users/devices,
-   rather than an authoritative DNS server.
+   the DNS over HTTPS is called a "DoH client".
+
+   A detailed glossary of DNS terms can be found in RFC 8499 [RFC8499].
 
    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
    document are to be interpreted as described in RFC 2119 [RFC2119].
-
-
-
-
-
-
-Dickinson, et al.      Expires September 16, 2019               [Page 3]
-
-Internet-Draft            draft-reid-doh-deploy               March 2019
-
 
 3.  Contrasting DoH and Conventional DNS
 
@@ -176,23 +190,23 @@ Internet-Draft            draft-reid-doh-deploy               March 2019
    assigned the IP addresses of several recursive resolvers via DHCP or
    similar network bootstrapping mechanism.  These are usually the IP
    addresses of recursive resolvers that are administered by the network
-   operator.  Users sometimes also change to third-party recursive
-   resolvers.  In some cases, they may even operate their own local
-   resolver.  In a small minority of cases, a network operator may also
-   choose to forward DNS queries on to an independently operated
-   recursive resolver.
+   operator.
 
-   [RFC8484] defines the protocol for DNS over HTTPS (DoH).  When DoH is
-   used, client and recursive server DNS traffic is encrypted using a
-   TLS channel, typically using TCP port 443.  DoH clients will have
+   When DoH is used, client and server DNS traffic is encrypted using a
+   TLS channel, typically to port 443.  DoH clients will generally have
    little need for conventional DNS apart from an initial bootstrap
-   query to find the IP addresses of a suitable DoH server.  This will
-   mean the bulk of their DNS resolver traffic would bypass an
-   operator's DNS resolver infrastructure because that traffic will make
-   use of the resolver service provided by the DoH server.
+   query to find the IP addresses of a suitable DoH server.  The bulk of
+   their DNS resolver traffic could bypass the current network's DNS
+   resolver infrastructure because that traffic will make use of the
+   resolver service provided by the DoH server.
 
-   DoH displaces the conventional DNS client-server model of clients
-   making queries and waiting for a reply from a server.
+   At present there is no standard for DoH server discovery.  Browser
+   vendors, who have been first to use DoH, have so far adopted ad-hoc
+   solutions.  One approach is to embed the names or URIs for public DoH
+   resolvers in the browser's configuration.  Another is to try DoH
+   opportunistically: if there is a DoH service at the IP address(es)
+   found in the device's stub resolver configuration, the browser uses
+   that.
 
 4.  DoH Impact on Existing DNS Behaviour
 
@@ -201,198 +215,219 @@ Internet-Draft            draft-reid-doh-deploy               March 2019
    When a DoH server performs the role of a recursive resolving DNS
    server, it queries other DNS or DoH servers to resolve the queries
    received from DoH clients.  These outbound queries will use a source
-   IP address of the DoH server, not the originating client.  This may
-   sometimes cause operational or security problems, for instance when
-   the DoH server queries another DoH or DNS server that uses access
-   control lists based on source IP address.  In this case, the ACL
-   applies to the DoH server and not the original DoH client.  That can
-   mean the DoH client eventually gets a different response than if it
-   made the query itself.  In particular, this may be a problem for IXFR
-   or AXFR queries because authoritative DNS servers commonly use ACLs
-   to restrict these queries.
-
-   This problem becomes more acute for dynamic updates RFC 2137
-   [RFC2137].  If an ACL-based on source IP address is used to accept or
-   reject these requests, it will be the address of the DoH server
-   rather than the DoH client which determines the outcome.  However
-   Transaction Signatures (TSIG) RFC2845 [RFC2845] are more commonly
-   used for authenticating dynamic update requests.  It is therefore
-   essential for DoH servers to ensure that TSIG resource records
+   IP address of the DoH server, not that of the originating client.
+   This may sometimes cause operational or security problems, for
+   instance when the DoH server queries another DoH or DNS server that
 
 
 
-Dickinson, et al.      Expires September 16, 2019               [Page 4]
+Dickinson, et al.        Expires April 29, 2021                 [Page 4]
 
-Internet-Draft            draft-reid-doh-deploy               March 2019
+Internet-Draft            draft-dlr-doh-deploy              October 2020
 
 
-   received from DoH clients are included in outgoing requests.  DoH
-   servers MUST ensure TSIG resource records included in any requests
-   received from DoH clients are included whenever the DoH server has to
-   contact another DoH or DNS server to satisfy that request.
-   Similarly, DoH servers MUST return to DoH clients any TSIG resource
-   records that are received from DNS or DoH servers.
+   uses access control lists based on source IP address.  In this case,
+   the ACL applies to the source address of the DoH server and not the
+   original DoH client.  That can mean the DoH client eventually gets a
+   different response than if it had made the query itself.  In
+   particular, this may be a problem for IXFR or AXFR queries because
+   authoritative DNS servers commonly use ACLs to restrict these
+   queries.
+
+   This problem becomes more acute for dynamic updates [RFC2137].  If an
+   ACL based on source IP address is used to accept or reject these
+   requests, it will be the address of the DoH server rather than the
+   DoH client which determines the outcome.  However Transaction
+   Signatures (TSIG) [RFC2845] and GSS-TSIG [RFC3645] are commonly used
+   for authenticating dynamic update requests.  It is therefore
+   essential that DoH servers do not interfere with any TSIG resource
+   records in queries or responses.  DoH servers MUST ensure TSIG
+   resource records included in any requests received from DoH clients
+   are included whenever the DoH server has to contact another DoH or
+   DNS server to satisfy that request.  Similarly, DoH servers MUST
+   return to DoH clients any TSIG resource records that are received
+   from DNS or DoH servers.
 
 4.2.  Split DNS
 
-   Split DNS configurations RFC8499 [RFC8499] are widely used,
-   particularly in enterprise networks.  These have an internal name
-   space which is not visible to the public Internet.  Resolving DNS
-   servers in such networks are configured to only provide answers for
-   this name internal space to requests from clients on the enterprise
-   network.  Applications and devices making DoH requests on networks
-   which use split DNS will not be able to access these internal names
-   unless their requests are sent to a suitably configured DoH server.
-   This probably means that networks using split DNS SHOULD provide DoH
-   servers which are able to provide answers for the internal name
-   space.
+   Split DNS configurations [RFC8499] are widely used, particularly in
+   enterprise networks.  These have an internal name space which is not
+   visible to the public Internet.  Resolving DNS servers in such
+   networks are usually configured to only provide answers for this name
+   internal space to requests from clients on the enterprise network.
+
+   Applications and devices making DoH requests on networks which use
+   split DNS will not be able to access these internal names unless
+   their requests are sent to a suitably configured DoH server.  This
+   probably means that networks using split DNS SHOULD provide DoH
+   servers which are able to provide answers for their internal name
+   space.  It therefore follows that networks using split DNS SHOULD
+   ensure that DoH clients query local DoH servers which have been
+   configured for that network's internal name space.
 
    Use of third-party DoH servers is not recommended in networks which
    have split DNS.  These servers are unlikely to know about the
    configuration of the local network and will therefore be unable to
    resolve or otherwise properly handle requests for the internal name
-   space.  This also presents security and privacy risks.  Requests from
-   DoH clients for internal names will leak, disclosing sensitive
+   space.  When third-party DoH servers are used in these networks, it
+   also presents security and privacy risks.  Requests from DoH clients
+   for internal names will leak, disclosing this potentially sensitive
    information to an external DoH server which is operated and
-   controlled by a third party.  DoH clients on networks using split DNS
-   SHOULD query DoH servers which have been configured for that
-   network's internal name space.
+   controlled by a third party.
+
+
+
+Dickinson, et al.        Expires April 29, 2021                 [Page 5]
+
+Internet-Draft            draft-dlr-doh-deploy              October 2020
+
 
 4.3.  Secure DNS (DNSSEC)
 
-   RFC 8484 [RFC8484] explains that interactions between a DoH server
-   and client benefit from the transport security provided by HTTPS and
-   that DoH does not provide message integrity.  Put simply, although a
-   DoH client can be sure it received exactly the data sent by a DoH
-   server, it does not know if that server is telling the truth.  That
-   can only be verified by DNSSEC validation, assuming that the DNS data
-   are signed.  Therefore a security-conscious DoH client SHOULD support
-   DNSSEC and perform DNSSEC validation by itself.  In some
-   circumstances, a DoH client MAY trust a DoH server to validate signed
-   responses on their behalf but MUST take full account of the
-   conseqences of doing so.
+   RFC 8484 explains that interactions between a DoH server and client
+   benefit from the transport security provided by HTTPS and that DoH
+   does not provide message integrity.  Although a DoH client can be
+   sure it received exactly the data sent by a DoH server, it does not
+   know if that server is telling the truth.  That can only be
+   determined by DNSSEC validation, assuming that the DNS data are
+   properly signed.  Therefore a security-conscious DoH client SHOULD
+   support DNSSEC and perform DNSSEC validation by itself.  DoH clients
+   MAY trust a DoH server to validate signed responses on their behalf
+   but MUST take full account of the consequences of doing so.
 
+4.4.  DNS Headers, OP Codes and EDNS Options
 
+   DoH servers MUST check the headers and opcodes on inbound DoH
+   requests and act accordingly.  In particular, DoH servers MUST NOT
+   assume that those requests are queries unless both the QR bit and
+   Opcode header are set to zero.  Relevant header and EDNS bits (DO,
+   CD, etc) on incoming queries MUST be reflected in the outgoing DNS or
+   DoH queries needed to resolve the original request.  [Remember
+   Community DNS treating DNS responses as queries?]
 
+   To do: add clarifications on behaviour around EDNS goop - padding,
+   ECN, keepalive, extended error code, DNS cookies, etc
 
+4.5.  Multicast DNS
 
+   Need to say something about this and .local?  Should DoH services
+   need to know or care about it?
 
-Dickinson, et al.      Expires September 16, 2019               [Page 5]
-
-Internet-Draft            draft-reid-doh-deploy               March 2019
-
-
-4.4.  Multicast DNS
-
-   Need to say something about this and .local
-
-5.  DoH Impact on Web Behaviour
+5.  DoH Impact on Browser Behaviour
 
 5.1.  Browser Caches
 
    A web browser maintains a cache of recent DNS data.  Responses from
    DoH servers will affect the contents of that cache.  This presents a
-   security risk because it may provide a way for DoH servers to
-   arbitrarily manipulate the content of a browser's cache that would
-   not be possible with conventional DNS.
+   security risk because DoH servers could arbitrarily manipulate the
+   content of a browser's cache in a way that would not be possible with
+   conventional DNS.  DoH servers may be able to populate a browser's
+   cache without the browser making DNS (or DoH) queries by sending
+   arbitrary application/dns-message elements in the HTML needed to
+   render a web page.
 
    DoH servers SHOULD NOT send DoH data (i.e. application/dns-message
    elements) unrelated to the request made by a DoH Client.  Similarly,
    a web server SHOULD NOT send DoH data that does not correspond to any
    of the URIs in the HTML which is returned. i.e. If all the URIs on
+
+
+
+Dickinson, et al.        Expires April 29, 2021                 [Page 6]
+
+Internet-Draft            draft-dlr-doh-deploy              October 2020
+
+
    some web page are for foo.example.com, the web server SHOULD NOT send
    application/dns-message elements for bar.example.com or example.net.
    DoH clients SHOULD ignore such unrelated DoH data sent by a DoH or
    web server.  DoH clients MUST NOT cache such data.
 
-   Browser caches MUST respect the TTL in the response DNS RRSet.
-
-5.2.  Interaction with DoH Unaware Web Proxies
-
-   Placeholder
-
-5.3.  Interaction with DoH Aware Web Proxies
-
-   DoH aware web proxies MUST respect the TTL in the response DNS RRSet.
-
-5.4.  What else?
+5.2.  What else?
 
    There have to be some server PUSH horrors here
 
+   Say something about the evils of web cookies and related spyware
+   (trackers, beacons, etc)?
+
 6.  Use Cases
 
-6.1.  DoH only server forwarding to a conventional validating resolver
+6.1.  DoH server forwarding to a traditional validating resolver:
 
    Placeholder
 
-
-
-
-
-
-
-
-
-Dickinson, et al.      Expires September 16, 2019               [Page 6]
-
-Internet-Draft            draft-reid-doh-deploy               March 2019
-
-
-6.2.  DoH only server using dns RRs known internally to the DoH server,
-      the authoritative source of which was not found by recursing the
-      conventional DNS
+6.2.  DoH server using private DNS RRs known only to the DoH server
 
    Placeholder
 
-6.3.  DoH http server forwarding to a conventional validating resolver
+6.3.  DoH server to HTTP server forwarding to a traditional validating
+      resolver:
 
    Placeholder
 
-6.4.  DoH http server using dns RRs known internally to the DoH server,
-      the authoritative source of which was not found by recursing the
-      conventional DNS
+6.4.  DoH server to HTTP server using private dns RRs known only to the
+      DoH server
 
    Placeholder
 
-7.  Recommendations
-
-   1.  DoH servers MUST NOT create an alternate root.
-
-   2.  The responses received over DoH MUST be available in the
-       conventional DNS.
-
-   3.  The DoH server MAY make choices about which RRs to return if it
-       knows more about the network topology.
-
-   4.  The DoH server MAY push useful additional RRs if it knows the
-       client is likely to need them soon.  Again, they MUST be
-       available in the conventional DNS.
-
-   5.  DoH servers MUST support DNSSEC.
-
-   6.  DoH clients SHOULD support DNSSEC.
-
-8.  Privacy Considerations
+7.  Privacy Concerns
 
    Text goes here
 
-9.  Security Considerations
+8.  Security Considerations
 
-   Leakage of split DNS queries to a DoH resolver could pose security
-   risks for some networks and users.
+   Text goes here
+
+9.  Recommendations
+
+   DoH servers on the public Internet MUST NOT create an alternate root
+   or publish data for TLDs that have not been created through ICANN or
+   IETF processes.  DoH servers on private networks MAY use alternate
+   roots and/or ad-hoc TLDs provided these name spaces do not leak to
+   the public Internet.
+
+
+
+
+Dickinson, et al.        Expires April 29, 2021                 [Page 7]
+
+Internet-Draft            draft-dlr-doh-deploy              October 2020
+
+
+   The responses received over DoH MUST be available in the traditional
+   DNS.
+
+   A DoH server MAY make choices about which RRs to return if it knows
+   more about the network or client locality, provided that does not
+   compromise DNSSEC validation.
+
+   The DoH server MAY push useful additional RRs to DoH Client if the
+   server knows the client is likely to need those RRs soon.  Again,
+   these RRs MUST be available in the traditional DNS.
+
+   DoH servers and clients MUST handle unknown RRtypes correctly: ie
+   support RFC 3597 [RFC3597].
+
+   DoH servers MUST support DNSSEC validation.
+
+   DoH clients SHOULD support DNSSEC validation.
+
+   DoH servers and clients SHOULD support Transaction Signatures (TSIG).
+   Although the message integrity checking offered by TSIG is redundant
+   when DNS transactions are carried over a TLS channel, TSIG offers
+   protection against replay attacks.  This may be useful for some types
+   of DNS transactions.
+
+   DoH servers MUST honour DNS error codes and extended error codes
+   [draft-ietf-dnsop-extended-error-16].  These MUST be returned to DoH
+   clients.  Use of HTTP error codes SHOULD complement these DNS error
+   codes and MUST NOT replace them.  DNS error codes have specific
+   meaning and these semantics may not always be readily conveyed in an
+   HTTP error code.
 
 10.  IANA Considerations
 
    This memo includes no request to IANA.
-
-
-
-
-
-Dickinson, et al.      Expires September 16, 2019               [Page 7]
-
-Internet-Draft            draft-reid-doh-deploy               March 2019
-
 
 11.  Acknowledgements
 
@@ -407,6 +442,14 @@ Internet-Draft            draft-reid-doh-deploy               March 2019
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/info/rfc2119>.
 
+
+
+
+Dickinson, et al.        Expires April 29, 2021                 [Page 8]
+
+Internet-Draft            draft-dlr-doh-deploy              October 2020
+
+
 12.2.  Informative References
 
    [RFC2137]  Eastlake 3rd, D., "Secure Domain Name System Dynamic
@@ -418,10 +461,19 @@ Internet-Draft            draft-reid-doh-deploy               March 2019
               (TSIG)", RFC 2845, DOI 10.17487/RFC2845, May 2000,
               <https://www.rfc-editor.org/info/rfc2845>.
 
-   [RFC7858]  Hu, Z., Zhu, L., Heidemann, J., Mankin, A., Wessels, D.,
-              and P. Hoffman, "Specification for DNS over Transport
-              Layer Security (TLS)", RFC 7858, DOI 10.17487/RFC7858, May
-              2016, <https://www.rfc-editor.org/info/rfc7858>.
+   [RFC3597]  Gustafsson, A., "Handling of Unknown DNS Resource Record
+              (RR) Types", RFC 3597, DOI 10.17487/RFC3597, September
+              2003, <https://www.rfc-editor.org/info/rfc3597>.
+
+   [RFC3645]  Kwan, S., Garg, P., Gilroy, J., Esibov, L., Westhead, J.,
+              and R. Hall, "Generic Security Service Algorithm for
+              Secret Key Transaction Authentication for DNS (GSS-TSIG)",
+              RFC 3645, DOI 10.17487/RFC3645, October 2003,
+              <https://www.rfc-editor.org/info/rfc3645>.
+
+   [RFC7816]  Bortzmeyer, S., "DNS Query Name Minimisation to Improve
+              Privacy", RFC 7816, DOI 10.17487/RFC7816, March 2016,
+              <https://www.rfc-editor.org/info/rfc7816>.
 
    [RFC8484]  Hoffman, P. and P. McManus, "DNS Queries over HTTPS
               (DoH)", RFC 8484, DOI 10.17487/RFC8484, October 2018,
@@ -437,19 +489,6 @@ Appendix A.  Additional Stuff
 
 Authors' Addresses
 
-
-
-
-
-
-
-
-
-Dickinson, et al.      Expires September 16, 2019               [Page 8]
-
-Internet-Draft            draft-reid-doh-deploy               March 2019
-
-
    John Dickinson
    Sinodun Internet Technologies Ltd
    Oxford Science Park
@@ -457,6 +496,14 @@ Internet-Draft            draft-reid-doh-deploy               March 2019
    UK
 
    Email: jad@sinodun.com
+
+
+
+
+
+Dickinson, et al.        Expires April 29, 2021                 [Page 9]
+
+Internet-Draft            draft-dlr-doh-deploy              October 2020
 
 
    Jason Livingood
@@ -501,4 +548,13 @@ Internet-Draft            draft-reid-doh-deploy               March 2019
 
 
 
-Dickinson, et al.      Expires September 16, 2019               [Page 9]
+
+
+
+
+
+
+
+
+
+Dickinson, et al.        Expires April 29, 2021                [Page 10]
