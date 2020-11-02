@@ -161,16 +161,16 @@
   </t>
   <t>
     DoH partially eliminates this problem by using TLS to encrypt the queries
-    and responses that are made. These use HTTP rather than the conventional DNS
+    and responses that are made. These use HTTPS rather than the conventional DNS
     protocol. Furthermore DoH traffic is intermingled with other HTTPS traffic,
     making it difficult for an eavesdropper to monitor DNS traffic or even be
     aware that it is taking place. It should be noted however that a user's DNS
-    queries could still be monitored by the DoH server(s) which receive them.
+    queries could still be observed by the DoH server(s) which receive them.
   </t>
   <t>
     The conventional model for DNS transactions involves a stub resolver,
-    resolving servers and authoritative DNS servers. The stub resolver is
-    usually part of the system software and is used by applications to make
+    recursive servers and authoritative DNS servers. The stub resolver is
+    usually part of the operating system software and is used by applications to make
     DNS queries and receive responses from recursive servers which are typically
     provided by an ISP or the local network administrator. Recursive servers
     answer queries from stub resolvers by traversing a hierarchy of
@@ -190,11 +190,13 @@
     relationships in traditional DNS.
   </t>
   <t>
-    HTTP servers would be able to offer DoH service without the need for
-    conventional DNS query-response transactions. For instance, HTTP servers
+    HTTP servers would be able to offer DoH resolution service without the need for
+    conventional DNS query-response transactions (e.g. Do53). For instance, HTTP servers
     could just return application/dns-message elements for the URIs in some web
     page, saving the web client from issuing DoH (or plaintext DNS) queries to
-    resolve the hostnames in those URIs.
+    lookup the hostnames in those URIs. On one hand there may be performance benefits to 
+    doing so in some cases, balanced against some risk arising from tighter coupling between 
+    layers and applications. 
     </t>
 </section>
 
@@ -220,22 +222,24 @@
 
 <section title="Contrasting DoH and Conventional DNS">
   <t>
-    With conventional DNS today, using UDP or TCP port 53, most users are
-    assigned the IP addresses of several recursive resolvers via DHCP or similar
+    With conventional DNS today, using UDP or TCP port 53 (DNS over port 53 - Do53), most users are
+    assigned the IP addresses of several recursive resolvers via Dynamic Host Configuration Protocol (DHCP) or similar
     network bootstrapping mechanism. These are usually the IP addresses of
     recursive resolvers that are administered by the network operator.
   </t>
   <t>
     When DoH is used, client and server DNS traffic is encrypted using a TLS
-    channel, typically to port 443. DoH clients will generally have little need for
+    channel, typically via port 443. DoH clients may have little need for
     conventional DNS apart from an initial bootstrap query to find the IP
     addresses of a suitable DoH server. The bulk of their DNS resolver traffic
     could bypass the current network's DNS resolver infrastructure because that
     traffic will make use of the resolver service provided by the DoH server.
   </t>
   <t>
-    At present there is no standard for DoH server discovery. Browser vendors,
-    who have been first to use DoH, have so far adopted ad-hoc solutions. One
+    At present there is no standard for DoH server discovery, which is 
+    being worked on in the Adaptive DNS Discovery (ADD) working group. Browser vendors,
+    who have been first to use DoH, have so far adopted ad-hoc solutions until 
+    suitable standard(s) are available. One potential 
     approach is to embed the names or URIs for public DoH resolvers in the
     browser's configuration. Another is to try DoH opportunistically: if there
     is a DoH service at the IP address(es) found in the device's stub resolver
@@ -378,7 +382,30 @@
 <section title="Use Cases">
   <section title="DoH server forwarding to a traditional validating resolver:">
     <t>
-      Placeholder
+      Recursive DNS operators will likely choose to deploy DoH support in a variety 
+      of ways, depending upon their internal technical requirements and platform 
+	    capabilities. One mode of deployment is to support DoH via a special 
+	    HTTPS server (or network element such as a load balancer) that then 
+	    forwards (proxies) the DNS query to a Do53 resolver on the backend. 
+	    This would typically occur within a datacenter or trusted private 
+	    network and represents a simple internal function separation 
+	    between two different protocols. It may also have the advantage of 
+	    off-loading TLS-session management and encryption onto hardware 
+	    and/or software optimized to performing those tasks.
+    </t>
+ </section>
+  <section title="Combined DoH server and DNS resolver:">
+    <t>
+      In contrast to the deployment design above, an alternative is to run the 
+	    DoH resolver on a server that is also running a recursive DNS resolver. 
+	    This combines the protocols offered for DNS resolution into a unified 
+	    service - potentially also supporting other protocols such as DoT. 
+	    However, at least based on current CPU capabilities, the result 
+	    seems likely to be that each server can handle fewer queries per 
+	    second than a Do53 server, necessitating a greater number of servers 
+	    to be deployed for a given peak query load. On the other hand, 
+	    server costs continue to decline and virtualization can in some 
+	    cases mitigate those concerns. 
     </t>
  </section>
  <section title="DoH server using private DNS RRs known only to the DoH server">
@@ -388,7 +415,7 @@
  </section>
  <section title="DoH server to HTTP server forwarding to a traditional validating resolver:">
    <t>
-     Placeholder
+     Placeholder [JL: how does this differ from the 1st subsection above?]
    </t>
  </section>
  <section title="DoH server to HTTP server using private dns RRs known only to the DoH server">
@@ -403,20 +430,32 @@
 
 <section title="Privacy Concerns">
     <t>
-      Text goes here
+      If a resolver operator has functionally separated the DoH service and Do53 service and is using a logically 
+	    separate DoH service to proxy DNS queries, then the network connection between the DoH service and 
+	    Do53 server should be trusted. If this is not the case, then it defeats the privacy objectives inherent 
+	    in the rationale for DoH. [JL: this is also in requirements below - and maybe it belongs in one or
+	    the other and not both]
     </t>
 </section>
 
 
 <section anchor="Security" title="Security Considerations">
   <t>
-    Text goes here
+    This document contains no security concerns that have not already been addressed by 
+	    RFC 8484. 
   </t>
 </section>
 
 
 <section title="Recommendations">
     <t>
+	If a resolver operator has functionally separated the DoH service and Do53 service and is using a logically 
+	    separate DoH service to proxy DNS queries, then the network connection between the DoH service and 
+	    Do53 server should be trusted. If this is not the case, then it defeats the privacy objectives inherent 
+	    in the rationale for DoH.
+    </t>
+    <t>
+    <t>    
       DoH servers on the public Internet MUST NOT create an alternate root or
       publish data for TLDs that have not been created through ICANN or IETF
       processes. DoH servers on private networks MAY use alternate roots and/or
