@@ -454,7 +454,6 @@
 	    Do53 server should be trusted. If this is not the case, then it defeats the privacy objectives inherent 
 	    in the rationale for DoH.
     </t>
-    <t>
     <t>    
       DoH servers on the public Internet MUST NOT create an alternate root or
       publish data for TLDs that have not been created through ICANN or IETF
