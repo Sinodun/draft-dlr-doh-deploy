@@ -17,6 +17,7 @@
 <!ENTITY RFC3645 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3645.xml">
 <!ENTITY RFC6146 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6146.xml">
 <!ENTITY RFC6147 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6147.xml">
+<!ENTITY RFC6895 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6895.xml">
 <!ENTITY RFC6950 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6950.xml">
 <!ENTITY RFC7816 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7816.xml">
 <!ENTITY RFC7858 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7858.xml">
@@ -251,18 +252,19 @@
 <section title="DoH Impact on Existing DNS Behaviour">
   <section title="DNS servers using Access Control Lists">
     <t>
-      When a DoH server performs the role of a recursive resolving DNS server,
-      it queries other DNS or DoH servers to resolve the queries received from
-      DoH clients. These outbound queries will use a source IP address of the
-      DoH server, not that of the originating client. This may sometimes cause
-      operational or security problems, for instance when the DoH server queries
-      another DoH or DNS server that uses access control lists based on source
-      IP address. In this case, the ACL applies to the source address of the DoH
-      server and not the original DoH client. That can mean the DoH client
-      eventually gets a different response than if it had made the query
-      itself. In particular, this may be a problem for IXFR or AXFR queries
-      because authoritative DNS servers commonly use ACLs to restrict these
-      queries.
+       When a DoH server performs the role of a recursive resolving DNS server, it queries
+       other DNS or DoH servers to resolve the queries received from DoH clients. In some
+       settings, a DOH server will forward these queries to a recursive resolver or some
+       proxy. In either scenario, these outbound queries will use a source IP address of
+       the DoH server, not that of the originating DoH client. This may sometimes cause
+       operational or security problems, for instance when the DoH server queries another
+       DoH or DNS server that uses access control lists based on source IP address. In this
+       case, the ACL applies to the source address of the DoH server (or an intermediary)
+       and not the original DoH client. That can mean the DoH client eventually gets a
+       different response than if it had made the query itself. In particular, this may be
+       a problem for IXFR or AXFR queries because authoritative DNS servers commonly use
+       ACLs to restrict these queries.
+
     </t>
     <t>
        This problem becomes more acute for dynamic updates <xref
@@ -298,15 +300,14 @@
       servers which have been configured for that network's internal name space.
     </t>
     <t>
-      Use of third-party DoH servers is not recommended in networks which have
-      split DNS. These servers are unlikely to know about the configuration of
-      the local network and will therefore be unable to resolve or otherwise
-      properly handle requests for the internal name space. When third-party DoH
-      servers are used in these networks, it also presents security and privacy
-      risks. Requests from DoH clients for internal names will leak, disclosing
-      this potentially sensitive information to an external DoH server which is
-      operated and controlled by a third party.
-       </t>
+       Use of third-party DoH servers is not recommended in networks which have split
+       DNS. These servers are unlikely to know about the configuration of the local network
+       and will therefore be unable to resolve or otherwise properly handle requests for
+       the internal name space. When third-party DoH servers are used in these networks, it
+       also presents security and privacy risks. Requests from DoH clients for internal
+       names will leak, disclosing this potentially sensitive information to an external
+       DNS server or proxy which is operated and controlled by a third party.
+    </t>
   </section>
   <section title="Secure DNS (DNSSEC)">
     <t>
@@ -324,16 +325,16 @@
   </section>
   <section title="DNS Headers, OP Codes and EDNS Options">
     <t>
-      DoH servers MUST check the headers and opcodes on inbound DoH requests and
-      act accordingly. In particular, DoH servers MUST NOT assume that those
-      requests are queries unless both the QR bit and Opcode header are set to
-      zero. Relevant header and EDNS bits (DO, CD, etc) on incoming queries MUST
-      be reflected in the outgoing DNS or DoH queries needed to resolve the
-      original request. [Remember Community DNS treating DNS responses as
-      queries?]
+       DoH servers MUST check the headers and opcodes on inbound DoH requests and act
+       accordingly. In particular, DoH servers MUST NOT assume that those requests are
+       queries unless both the QR bit and Opcode header are set to zero. Relevant header
+       and EDNS bits (DO, CD, etc) on incoming queries MUST be reflected in the outgoing
+       DNS or DoH queries needed to resolve the original request. Similarly, the header and
+       EDNS bits returned in responses MUST be reflected in the responses transmitted to a
+       DoH client by the DoH server.
     </t>
     <t>
-      To do: add clarifications on behaviour around EDNS goop - padding, ECN,
+      To do: add clarifications on behaviour around EDNS goop - buffer sizes, padding, ECN,
       keepalive, extended error code, DNS cookies, etc
     </t>
   </section>
@@ -380,6 +381,36 @@
 </section>
 
 <section title="Use Cases">
+   <section title="DoH server resolving incoming queries">
+      <t>
+       A DoH server is unlikely to be able to answer all the incoming queries it
+       receives. This means it will need to interact with other DNS servers in order to
+       resolve those queries. There are two scenarios. The DoH server could send these queries
+       to a suitable proxy or forwarding server for resolution. It could function as a
+       validating recursive DNS server and resolve the queries for itself.
+     </t>
+     <t>
+       There are potential privacy and security implications for both scenarios. If the DoH
+       server's outbound queries use Do53, the query name (or parts of the query name) will
+       be transmitted in plaintext - possibly disclosing sensitive information. The
+       corresponding plaintext responses to those queries could also include sensitive information.
+       Operators of DoH will need to decide what transport(s) are used for outgoing queries
+       and what policy applies and consider the technical and privacy trade-offs of those
+       choices . This would presumably be some combination of DoH, DoT and Do53. A DoH server
+       will probably need to have configuration controls to apply local policy for those
+       outgoing queries: for instance, try DoH first then fall back to Do53 if DoH is not
+       available.
+     </t>
+     <t>
+       A DoH server cannot assume in the general case that it can use DoH (or DoT) to resolve
+       queries. Though this may be possible when the server sends its queries to a proxy or
+       resolving DNS server that's under the same administrative control. It therefore
+       follows that a DoH server SHOULD support Do53 unless it is operating in an
+       environment where the DoH server is configured with the answers for all possible
+       queries that the local DoH clients will generate.
+      </t>
+   </section>
+
   <section title="DoH server forwarding to a traditional validating resolver:">
     <t>
       Recursive DNS operators will likely choose to deploy DoH support in a variety 
@@ -408,21 +439,43 @@
 	    cases mitigate those concerns. 
     </t>
  </section>
- <section title="DoH server using private DNS RRs known only to the DoH server">
-   <t>
-     Placeholder
-   </t>
- </section>
- <section title="DoH server to HTTP server forwarding to a traditional validating resolver:">
-   <t>
-     Placeholder [JL: how does this differ from the 1st subsection above?]
-   </t>
- </section>
- <section title="DoH server to HTTP server using private dns RRs known only to the DoH server">
-   <t>
-     Placeholder
-   </t>
- </section>
+  <section title="DoH server using private DNS RRs">
+    <t>
+      Some DoH environments could use "private" DNS Resource Records for internal
+      purposes. These private use resource records SHOULD NOT leak to the public
+      Internet.
+    </t>
+    <t>
+      Care is needed when choosing the type codes for these sorts of resource
+      records. The guidance in <xref target="RFC6895"></xref> RFC 6895 should be followed.
+      If these private-use Resource Records are used in a closed setting that is isolated
+      from the public Internet, type codes SHOULD be assigned from the Reserved from
+      Private Use Range, ie 0xF00-0xFFFE (65280-65535). However care should be taken when
+      two or more of these private networks are connected to ensure there are no type code
+      collisions: ie situations where network A and network B have both used type code
+      65000 (say) for discrete internal purposes.
+    </t>
+    <t>
+      For DoH settings on the Internet, type codes for new resource record types MUST be
+      registered with IANA. This will ensure the type code assignment is unique and reduce
+      the potential for type code collisions. The Expert Review process described in
+      Section 3.1.1 of RFC 6895 MUST be used for these assignments.
+    </t>
+     <t>
+      Both these forms of type code assignment imply that DoH clients and servers support
+      RFC 3597.
+     </t>
+   </section>
+   <section title="DoH server to HTTP server forwarding to a traditional validating resolver:">
+     <t>
+      Covered by "DoH server resolving incoming queries" above?
+     </t>
+   </section>
+   <section title="DoH server to HTTP server using private dns RRs known only to the DoH server">
+     <t>
+      Covered by "DoH server using private DNS RRs" above?
+     </t>
+   </section>
 
 </section>
 
@@ -495,7 +548,9 @@
       [draft-ietf-dnsop-extended-error-16]. These MUST be returned to DoH
       clients. Use of HTTP error codes SHOULD complement these DNS error codes
       and MUST NOT replace them. DNS error codes have specific meaning and these
-      semantics may not always be readily conveyed in an HTTP error code.
+      semantics may not always be readily conveyed in an HTTP error code. It is also
+      possible that DoH clients could strip any HTTP information before returning the DNS
+      response to the application that had initiated the DoH query.
     </t>
       
 </section>
@@ -533,6 +588,7 @@
       &RFC2845;
       &RFC3597;
       &RFC3645;
+      &RFC6895;
       &RFC7816;
       &RFC8484;
       &RFC8499;

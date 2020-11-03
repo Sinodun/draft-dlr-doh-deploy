@@ -84,28 +84,28 @@ Table of Contents
      4.3.  Secure DNS (DNSSEC) . . . . . . . . . . . . . . . . . . .   6
      4.4.  DNS Headers, OP Codes and EDNS Options  . . . . . . . . .   6
      4.5.  Multicast DNS . . . . . . . . . . . . . . . . . . . . . .   6
-   5.  DoH Impact on Browser Behaviour . . . . . . . . . . . . . . .   6
-     5.1.  Browser Caches  . . . . . . . . . . . . . . . . . . . . .   6
+   5.  DoH Impact on Browser Behaviour . . . . . . . . . . . . . . .   7
+     5.1.  Browser Caches  . . . . . . . . . . . . . . . . . . . . .   7
      5.2.  What else?  . . . . . . . . . . . . . . . . . . . . . . .   7
    6.  Use Cases . . . . . . . . . . . . . . . . . . . . . . . . . .   7
-     6.1.  DoH server forwarding to a traditional validating
-           resolver: . . . . . . . . . . . . . . . . . . . . . . . .   7
-     6.2.  Combined DoH server and DNS resolver: . . . . . . . . . .   7
-     6.3.  DoH server using private DNS RRs known only to the DoH
-           server  . . . . . . . . . . . . . . . . . . . . . . . . .   8
-     6.4.  DoH server to HTTP server forwarding to a traditional
-           validating resolver:  . . . . . . . . . . . . . . . . . .   8
-     6.5.  DoH server to HTTP server using private dns RRs known
-           only to the DoH server  . . . . . . . . . . . . . . . . .   8
-   7.  Privacy Concerns  . . . . . . . . . . . . . . . . . . . . . .   8
-   8.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
-   9.  Recommendations . . . . . . . . . . . . . . . . . . . . . . .   8
-   10. IANA Considerations . . . . . . . . . . . . . . . . . . . . .   9
-   11. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   9
-   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .   9
-     12.1.  Normative References . . . . . . . . . . . . . . . . . .   9
-     12.2.  Informative References . . . . . . . . . . . . . . . . .  10
-   Appendix A.  Additional Stuff . . . . . . . . . . . . . . . . . .  10
+     6.1.  DoH server resolving incoming queries . . . . . . . . . .   7
+     6.2.  DoH server forwarding to a traditional validating
+           resolver: . . . . . . . . . . . . . . . . . . . . . . . .   8
+     6.3.  Combined DoH server and DNS resolver: . . . . . . . . . .   8
+     6.4.  DoH server using private DNS RRs  . . . . . . . . . . . .   8
+     6.5.  DoH server to HTTP server forwarding to a traditional
+           validating resolver:  . . . . . . . . . . . . . . . . . .   9
+     6.6.  DoH server to HTTP server using private dns RRs known
+           only to the DoH server  . . . . . . . . . . . . . . . . .   9
+   7.  Privacy Concerns  . . . . . . . . . . . . . . . . . . . . . .   9
+   8.  Security Considerations . . . . . . . . . . . . . . . . . . .   9
+   9.  Recommendations . . . . . . . . . . . . . . . . . . . . . . .   9
+   10. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  10
+   11. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  11
+   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  11
+     12.1.  Normative References . . . . . . . . . . . . . . . . . .  11
+     12.2.  Informative References . . . . . . . . . . . . . . . . .  11
+   Appendix A.  Additional Stuff . . . . . . . . . . . . . . . . . .  12
 
 
 
@@ -114,7 +114,7 @@ Dickinson, et al.          Expires May 4, 2021                  [Page 2]
 Internet-Draft            draft-dlr-doh-deploy              October 2020
 
 
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  10
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  12
 
 1.  Introduction
 
@@ -232,17 +232,19 @@ Internet-Draft            draft-dlr-doh-deploy              October 2020
 
    When a DoH server performs the role of a recursive resolving DNS
    server, it queries other DNS or DoH servers to resolve the queries
-   received from DoH clients.  These outbound queries will use a source
-   IP address of the DoH server, not that of the originating client.
-   This may sometimes cause operational or security problems, for
-   instance when the DoH server queries another DoH or DNS server that
-   uses access control lists based on source IP address.  In this case,
-   the ACL applies to the source address of the DoH server and not the
-   original DoH client.  That can mean the DoH client eventually gets a
-   different response than if it had made the query itself.  In
-   particular, this may be a problem for IXFR or AXFR queries because
-   authoritative DNS servers commonly use ACLs to restrict these
-   queries.
+   received from DoH clients.  In some settings, a DOH server will
+   forward these queries to a recursive resolver or some proxy.  In
+   either scenario, these outbound queries will use a source IP address
+   of the DoH server, not that of the originating DoH client.  This may
+   sometimes cause operational or security problems, for instance when
+   the DoH server queries another DoH or DNS server that uses access
+   control lists based on source IP address.  In this case, the ACL
+   applies to the source address of the DoH server (or an intermediary)
+   and not the original DoH client.  That can mean the DoH client
+   eventually gets a different response than if it had made the query
+   itself.  In particular, this may be a problem for IXFR or AXFR
+   queries because authoritative DNS servers commonly use ACLs to
+   restrict these queries.
 
    This problem becomes more acute for dynamic updates [RFC2137].  If an
    ACL based on source IP address is used to accept or reject these
@@ -272,8 +274,6 @@ Internet-Draft            draft-dlr-doh-deploy              October 2020
    probably means that networks using split DNS SHOULD provide DoH
    servers which are able to provide answers for their internal name
    space.  It therefore follows that networks using split DNS SHOULD
-   ensure that DoH clients query local DoH servers which have been
-   configured for that network's internal name space.
 
 
 
@@ -282,6 +282,9 @@ Dickinson, et al.          Expires May 4, 2021                  [Page 5]
 Internet-Draft            draft-dlr-doh-deploy              October 2020
 
 
+   ensure that DoH clients query local DoH servers which have been
+   configured for that network's internal name space.
+
    Use of third-party DoH servers is not recommended in networks which
    have split DNS.  These servers are unlikely to know about the
    configuration of the local network and will therefore be unable to
@@ -289,7 +292,7 @@ Internet-Draft            draft-dlr-doh-deploy              October 2020
    space.  When third-party DoH servers are used in these networks, it
    also presents security and privacy risks.  Requests from DoH clients
    for internal names will leak, disclosing this potentially sensitive
-   information to an external DoH server which is operated and
+   information to an external DNS server or proxy which is operated and
    controlled by a third party.
 
 4.3.  Secure DNS (DNSSEC)
@@ -312,24 +315,21 @@ Internet-Draft            draft-dlr-doh-deploy              October 2020
    assume that those requests are queries unless both the QR bit and
    Opcode header are set to zero.  Relevant header and EDNS bits (DO,
    CD, etc) on incoming queries MUST be reflected in the outgoing DNS or
-   DoH queries needed to resolve the original request.  [Remember
-   Community DNS treating DNS responses as queries?]
+   DoH queries needed to resolve the original request.  Similarly, the
+   header and EDNS bits returned in responses MUST be reflected in the
+   responses transmitted to a DoH client by the DoH server.
 
-   To do: add clarifications on behaviour around EDNS goop - padding,
-   ECN, keepalive, extended error code, DNS cookies, etc
+   To do: add clarifications on behaviour around EDNS goop - buffer
+   sizes, padding, ECN, keepalive, extended error code, DNS cookies, etc
 
 4.5.  Multicast DNS
 
    Need to say something about this and .local?  Should DoH services
    need to know or care about it?
 
-5.  DoH Impact on Browser Behaviour
 
-5.1.  Browser Caches
 
-   A web browser maintains a cache of recent DNS data.  Responses from
-   DoH servers will affect the contents of that cache.  This presents a
-   security risk because DoH servers could arbitrarily manipulate the
+
 
 
 
@@ -338,6 +338,13 @@ Dickinson, et al.          Expires May 4, 2021                  [Page 6]
 Internet-Draft            draft-dlr-doh-deploy              October 2020
 
 
+5.  DoH Impact on Browser Behaviour
+
+5.1.  Browser Caches
+
+   A web browser maintains a cache of recent DNS data.  Responses from
+   DoH servers will affect the contents of that cache.  This presents a
+   security risk because DoH servers could arbitrarily manipulate the
    content of a browser's cache in a way that would not be possible with
    conventional DNS.  DoH servers may be able to populate a browser's
    cache without the browser making DNS (or DoH) queries by sending
@@ -362,7 +369,45 @@ Internet-Draft            draft-dlr-doh-deploy              October 2020
 
 6.  Use Cases
 
-6.1.  DoH server forwarding to a traditional validating resolver:
+6.1.  DoH server resolving incoming queries
+
+   A DoH server is unlikely to be able to answer all the incoming
+   queries it receives.  This means it will need to interact with other
+   DNS servers in order to resolve those queries.  There are two
+   scenarios.  The DoH server could send these queries to a suitable
+   proxy or forwarding server for resolution.  It could function as a
+   validating recursive DNS server and resolve the queries for itself.
+
+   There are potential privacy and security implications for both
+   scenarios.  If the DoH server's outbound queries use Do53, the query
+   name (or parts of the query name) will be transmitted in plaintext -
+   possibly disclosing sensitive information.  The corresponding
+   plaintext responses to those queries could also include sensitive
+   information.  Operators of DoH will need to decide what transport(s)
+   are used for outgoing queries and what policy applies and consider
+   the technical and privacy trade-offs of those choices . This would
+
+
+
+Dickinson, et al.          Expires May 4, 2021                  [Page 7]
+
+Internet-Draft            draft-dlr-doh-deploy              October 2020
+
+
+   presumably be some combination of DoH, DoT and Do53.  A DoH server
+   will probably need to have configuration controls to apply local
+   policy for those outgoing queries: for instance, try DoH first then
+   fall back to Do53 if DoH is not available.
+
+   A DoH server cannot assume in the general case that it can use DoH
+   (or DoT) to resolve queries.  Though this may be possible when the
+   server sends its queries to a proxy or resolving DNS server that's
+   under the same administrative control.  It therefore follows that a
+   DoH server SHOULD support Do53 unless it is operating in an
+   environment where the DoH server is configured with the answers for
+   all possible queries that the local DoH clients will generate.
+
+6.2.  DoH server forwarding to a traditional validating resolver:
 
    Recursive DNS operators will likely choose to deploy DoH support in a
    variety of ways, depending upon their internal technical requirements
@@ -376,7 +421,7 @@ Internet-Draft            draft-dlr-doh-deploy              October 2020
    encryption onto hardware and/or software optimized to performing
    those tasks.
 
-6.2.  Combined DoH server and DNS resolver:
+6.3.  Combined DoH server and DNS resolver:
 
    In contrast to the deployment design above, an alternative is to run
    the DoH resolver on a server that is also running a recursive DNS
@@ -386,30 +431,51 @@ Internet-Draft            draft-dlr-doh-deploy              October 2020
    the result seems likely to be that each server can handle fewer
    queries per second than a Do53 server, necessitating a greater number
    of servers to be deployed for a given peak query load.  On the other
+   hand, server costs continue to decline and virtualization can in some
+   cases mitigate those concerns.
+
+6.4.  DoH server using private DNS RRs
+
+   Some DoH environments could use "private" DNS Resource Records for
+   internal purposes.  These private use resource records SHOULD NOT
+   leak to the public Internet.
+
+   Care is needed when choosing the type codes for these sorts of
+   resource records.  The guidance in [RFC6895] RFC 6895 should be
 
 
 
-Dickinson, et al.          Expires May 4, 2021                  [Page 7]
+Dickinson, et al.          Expires May 4, 2021                  [Page 8]
 
 Internet-Draft            draft-dlr-doh-deploy              October 2020
 
 
-   hand, server costs continue to decline and virtualization can in some
-   cases mitigate those concerns.
+   followed.  If these private-use Resource Records are used in a closed
+   setting that is isolated from the public Internet, type codes SHOULD
+   be assigned from the Reserved from Private Use Range, ie 0xF00-0xFFFE
+   (65280-65535).  However care should be taken when two or more of
+   these private networks are connected to ensure there are no type code
+   collisions: ie situations where network A and network B have both
+   used type code 65000 (say) for discrete internal purposes.
 
-6.3.  DoH server using private DNS RRs known only to the DoH server
+   For DoH settings on the Internet, type codes for new resource record
+   types MUST be registered with IANA.  This will ensure the type code
+   assignment is unique and reduce the potential for type code
+   collisions.  The Expert Review process described in Section 3.1.1 of
+   RFC 6895 MUST be used for these assignments.
 
-   Placeholder
+   Both these forms of type code assignment imply that DoH clients and
+   servers support RFC 3597.
 
-6.4.  DoH server to HTTP server forwarding to a traditional validating
+6.5.  DoH server to HTTP server forwarding to a traditional validating
       resolver:
 
-   Placeholder [JL: how does this differ from the 1st subsection above?]
+   Covered by "DoH server resolving incoming queries" above?
 
-6.5.  DoH server to HTTP server using private dns RRs known only to the
+6.6.  DoH server to HTTP server using private dns RRs known only to the
       DoH server
 
-   Placeholder
+   Covered by "DoH server using private DNS RRs" above?
 
 7.  Privacy Concerns
 
@@ -431,6 +497,15 @@ Internet-Draft            draft-dlr-doh-deploy              October 2020
    If a resolver operator has functionally separated the DoH service and
    Do53 service and is using a logically separate DoH service to proxy
    DNS queries, then the network connection between the DoH service and
+
+
+
+
+Dickinson, et al.          Expires May 4, 2021                  [Page 9]
+
+Internet-Draft            draft-dlr-doh-deploy              October 2020
+
+
    Do53 server should be trusted.  If this is not the case, then it
    defeats the privacy objectives inherent in the rationale for DoH.
 
@@ -442,13 +517,6 @@ Internet-Draft            draft-dlr-doh-deploy              October 2020
 
    The responses received over DoH MUST be available in the traditional
    DNS.
-
-
-
-Dickinson, et al.          Expires May 4, 2021                  [Page 8]
-
-Internet-Draft            draft-dlr-doh-deploy              October 2020
-
 
    A DoH server MAY make choices about which RRs to return if it knows
    more about the network or client locality, provided that does not
@@ -476,11 +544,23 @@ Internet-Draft            draft-dlr-doh-deploy              October 2020
    clients.  Use of HTTP error codes SHOULD complement these DNS error
    codes and MUST NOT replace them.  DNS error codes have specific
    meaning and these semantics may not always be readily conveyed in an
-   HTTP error code.
+   HTTP error code.  It is also possible that DoH clients could strip
+   any HTTP information before returning the DNS response to the
+   application that had initiated the DoH query.
 
 10.  IANA Considerations
 
    This memo includes no request to IANA.
+
+
+
+
+
+
+Dickinson, et al.          Expires May 4, 2021                 [Page 10]
+
+Internet-Draft            draft-dlr-doh-deploy              October 2020
+
 
 11.  Acknowledgements
 
@@ -494,17 +574,6 @@ Internet-Draft            draft-dlr-doh-deploy              October 2020
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/info/rfc2119>.
-
-
-
-
-
-
-
-Dickinson, et al.          Expires May 4, 2021                  [Page 9]
-
-Internet-Draft            draft-dlr-doh-deploy              October 2020
-
 
 12.2.  Informative References
 
@@ -527,6 +596,10 @@ Internet-Draft            draft-dlr-doh-deploy              October 2020
               RFC 3645, DOI 10.17487/RFC3645, October 2003,
               <https://www.rfc-editor.org/info/rfc3645>.
 
+   [RFC6895]  Eastlake 3rd, D., "Domain Name System (DNS) IANA
+              Considerations", BCP 42, RFC 6895, DOI 10.17487/RFC6895,
+              April 2013, <https://www.rfc-editor.org/info/rfc6895>.
+
    [RFC7816]  Bortzmeyer, S., "DNS Query Name Minimisation to Improve
               Privacy", RFC 7816, DOI 10.17487/RFC7816, March 2016,
               <https://www.rfc-editor.org/info/rfc7816>.
@@ -534,6 +607,16 @@ Internet-Draft            draft-dlr-doh-deploy              October 2020
    [RFC8484]  Hoffman, P. and P. McManus, "DNS Queries over HTTPS
               (DoH)", RFC 8484, DOI 10.17487/RFC8484, October 2018,
               <https://www.rfc-editor.org/info/rfc8484>.
+
+
+
+
+
+
+Dickinson, et al.          Expires May 4, 2021                 [Page 11]
+
+Internet-Draft            draft-dlr-doh-deploy              October 2020
+
 
    [RFC8499]  Hoffman, P., Sullivan, A., and K. Fujiwara, "DNS
               Terminology", BCP 219, RFC 8499, DOI 10.17487/RFC8499,
@@ -552,14 +635,6 @@ Authors' Addresses
    UK
 
    Email: jad@sinodun.com
-
-
-
-
-
-Dickinson, et al.          Expires May 4, 2021                 [Page 10]
-
-Internet-Draft            draft-dlr-doh-deploy              October 2020
 
 
    Jason Livingood
@@ -594,23 +669,4 @@ Internet-Draft            draft-dlr-doh-deploy              October 2020
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Dickinson, et al.          Expires May 4, 2021                 [Page 11]
+Dickinson, et al.          Expires May 4, 2021                 [Page 12]
